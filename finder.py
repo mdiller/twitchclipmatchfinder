@@ -7,28 +7,14 @@ from dotabase import *
 
 session = dotabase_session()
 
-clip_slug = "AmericanNurturingDiscEleGiggle"
-# clip_slug = "HungryCalmSnoodRlyTho"
-
-clip_info = requests.get(f"https://api.twitch.tv/kraken/clips/{clip_slug}", headers= {
-	"Client-ID": "<client_id>",
-	"Accept": "application/vnd.twitchtv.v5+json"
-}).json()
-
-
-
-r = requests.get(clip_info["thumbnails"]["medium"])
-
-with open("game.jpg", "wb") as f:  
-    f.write(r.content)
 
 def get_template(vpk_png_path):
 	image = Image.open("vpk" + vpk_png_path).convert("RGB")
-	image.thumbnail((16, 9))
+	image.thumbnail((64, 36))
 	return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY)
 
-game_image = Image.open("game.jpg").convert("RGB")
-game_image = game_image.crop((0, 0, game_image.size[0], 15))
+game_image = Image.open("cache/CuteSucculentScorpionAMPEnergy.png").convert("RGB")
+game_image = game_image.crop((0, 0, game_image.size[0], 42))
 img = cv2.cvtColor(np.asarray(game_image), cv2.COLOR_RGB2GRAY)
 # img = cv2.imread("game.jpg", 0)
 img2 = img.copy()
