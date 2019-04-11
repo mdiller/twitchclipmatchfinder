@@ -1,0 +1,64 @@
+[
+	{
+		"clip": "https://www.twitch.tv/peterpandam/clip/AmericanNurturingDiscEleGiggle",
+		"heroes": [
+			"nevermore",
+			"ancient_apparition",
+			"shadow_demon",
+			"juggernaut",
+			"rattletrap",
+			"dark_seer",
+			"rubick",
+			"bloodseeker",
+			"queenofpain",
+			"treant"
+		]
+	},
+	{
+		"clip": "https://clips.twitch.tv/BillowingHedonisticSamosaPeteZarollTie",
+		"heroes": [
+			"naga_siren",
+			"alchemist",
+			"weaver",
+			"techies",
+			"shredder",
+			"lion",
+			"omniknight",
+			"ember_spirit",
+			"vengefulspirit",
+			"abaddon"
+		]
+	},
+	{
+		"clip": "https://clips.twitch.tv/LachrymoseHilariousWhaleFloof",
+		"heroes": [
+			"bounty_hunter",
+			"rubick",
+			"batrider",
+			"life_stealer",
+			"wisp",
+			"shadow_shaman",
+			"sven",
+			"dark_willow",
+			"zuus",
+			"weaver"
+		],
+		"notes": "zeus arcana"
+	},
+	{
+		"clip": "https://clips.twitch.tv/CuteSucculentScorpionAMPEnergy",
+		"heroes": [
+			"techies",
+			"ancient_apparition",
+			"treant",
+			"jakiro",
+			"phantom_lancer",
+			"windrunner",
+			"wisp",
+			"storm_spirit",
+			"oracle",
+			"juggernaut"
+		],
+		"notes": "techies arcana"
+	}
+]
