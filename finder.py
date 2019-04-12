@@ -33,21 +33,25 @@ def get_template(vpk_png_path, width):
 	# this gets the right ratio for a hero image
 	height = round(0.5625 * width)
 	image = Image.open(local_file).convert("RGB")
-	image.thumbnail((width, height))
+	image.thumbnail((width, height), Image.ANTIALIAS)
 
 	modifier = width / 128
 	# crop to not include the edges or the bottom section where dota plus icons show up
 	image = image.crop((
-		int(8 * modifier),
-		int(8 * modifier),
-		image.size[0] - (8 * modifier),
-		image.size[1] - (32 * modifier)
+		round(8 * modifier),
+		round(8 * modifier),
+		image.size[0] - round(8 * modifier),
+		image.size[1] - round(32 * modifier)
 	))
 	return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY)
+
+# x positions of heroes in the match image, based on an image with height of 2160
+hero_positions = [ 30.44, 156.44, 282.44, 408.44, 534.44, 1078.77, 1205.11, 1331.11, 1456.44, 1582.77 ]
 
 class HeroMatch():
 	def __init__(self, hero, size_ratio):
 		self.hero = hero
+		self.size_ratio = size_ratio
 		self.hero_width = round(128 * size_ratio)
 		self.images = []
 		self.point = None
@@ -67,28 +71,50 @@ class HeroMatch():
 			result.append(HeroMatch(hero, width))
 		return result
 
-	def is_point_valid(self, tolerance):
+	def is_point_valid(self, y_tolerance, x_tolerance):
 		y = round(self.hero_width / 8)
-		return self.point[1] + tolerance > y and self.point[1] - tolerance < y
+		return abs(self.point[1] - y) < y_tolerance and self.slot_diff < x_tolerance
+
+	def get_index_diff(self):
+		normedx = self.point[0] / self.size_ratio
+		bestdiff = 1000
+		besti = 0
+		for i in range(len(hero_positions)):
+			diff = hero_positions[i] - normedx
+			if abs(diff) < abs(bestdiff):
+				bestdiff = diff
+				besti = i
+		return besti, bestdiff
+
+	@property
+	def slot_diff(self):
+		slot, diff = self.get_index_diff()
+		return abs(diff)
+
+	@property
+	def slot(self):
+		slot, diff = self.get_index_diff()
+		return slot
 
 	def __str__(self):
-		return f"{self.hero.localized_name.rjust(20)}: {str(self.point).rjust(10)} [{self.score}]"
+		return f"{self.hero.localized_name.rjust(20)}: {str(self.point).rjust(10)} {{{self.slot} {f'{self.slot_diff:.2f}'.rjust(6)}}} [{self.score}]"
 
-
-
-# matching_methods = ["cv2.TM_CCOEFF", "cv2.TM_CCOEFF_NORMED", "cv2.TM_CCORR",
-# 	"cv2.TM_CCORR_NORMED", "cv2.TM_SQDIFF", "cv2.TM_SQDIFF_NORMED"]
 
 
 # removed the ones that are bad
-matching_methods = ["cv2.TM_CCOEFF_NORMED", "cv2.TM_CCORR_NORMED", "cv2.TM_SQDIFF", "cv2.TM_SQDIFF_NORMED"]
+matching_methods = ["cv2.TM_CCOEFF", "cv2.TM_CCOEFF_NORMED", "cv2.TM_CCORR",
+	"cv2.TM_CCORR_NORMED", "cv2.TM_SQDIFF", "cv2.TM_SQDIFF_NORMED"]
 
-def find_heroes(match_image_path, method, return_count=10, sort_result=True):
+def find_heroes(match_image_path, method=cv2.TM_CCOEFF_NORMED, extra_count=0, sort_by_score=False):
 	game_image = Image.open(match_image_path).convert("RGB")
 	# ratio between full hero size and the one in this image
 	image_ratio = game_image.size[1] / 2160
 
-	game_image = game_image.crop((0, 0, game_image.size[0], int(84 * image_ratio)))
+	# yes, calculating this relative to the height
+	herobar_width = 0.8 * game_image.size[1]
+	herobar_margin = (game_image.size[0] - herobar_width) // 2
+
+	game_image = game_image.crop((herobar_margin, 0, game_image.size[0] - herobar_margin, int(84 * image_ratio)))
 	img = cv2.cvtColor(np.asarray(game_image), cv2.COLOR_RGB2GRAY)
 	img2 = img.copy()
 
@@ -115,16 +141,24 @@ def find_heroes(match_image_path, method, return_count=10, sort_result=True):
 				match.score = score
 				match.point = top_left
 
-	matches = list(filter(lambda m: m.is_point_valid(2), matches))
-
+	matches = list(filter(lambda m: m.is_point_valid(4, 10), matches))
 	matches = sorted(matches, key=lambda m: m.score, reverse=True)
-	matches = matches[:return_count]
-	if sort_result:
-		matches = sorted(matches, key=lambda m: m.point[0])
 
-	return matches
+	final_matches = []
+	for slot in range(10):
+		besti = None
+		for i in range(len(matches)):
+			match = matches[i]
+			if slot == match.slot:
+				besti = i
+				break
+		if besti is not None:
+			final_matches.append(matches.pop(besti))
 
-# matches = find_heroes("cache/CuteSucculentScorpionAMPEnergy.png", cv2.TM_CCOEFF, 15)
+	if sort_by_score:
+		final_matches = sorted(final_matches, key=lambda m: m.score, reverse=True)
 
-# for match in matches:
-# 	print(match)
+	if extra_count:
+		final_matches.extend(matches[:extra_count])
+
+	return final_matches

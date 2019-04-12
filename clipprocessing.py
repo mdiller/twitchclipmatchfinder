@@ -51,5 +51,3 @@ def get_first_clip_frame(slug):
 		success, image = vidcap.read()
 		cv2.imwrite(frame_filename, image)
 	return frame_filename
-
-# get_first_clip_frame("CuteSucculentScorpionAMPEnergy")

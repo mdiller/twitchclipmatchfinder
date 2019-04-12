@@ -13,7 +13,8 @@
 			"bloodseeker",
 			"queenofpain",
 			"treant"
-		]
+		],
+		"notes": "sf dead"
 	},
 	{
 		"clip": "https://clips.twitch.tv/BillowingHedonisticSamosaPeteZarollTie",
@@ -64,5 +65,87 @@
 			"juggernaut"
 		],
 		"notes": "techies arcana"
+	},
+	{
+		"clip": "https://clips.twitch.tv/ArbitraryBumblingNeanderthalKappaRoss",
+		"slug": "ArbitraryBumblingNeanderthalKappaRoss",
+		"heroes": [
+			"pangolier",
+			"nyx_assassin",
+			"oracle",
+			"leshrac",
+			"monkey_king",
+			"wisp",
+			"mars",
+			"shadow_shaman",
+			"life_stealer",
+			"morphling"
+		]
+	},
+	{
+		"clip": "https://clips.twitch.tv/GrossSuperSharkMrDestructoid",
+		"slug": "GrossSuperSharkMrDestructoid",
+		"heroes": [
+			"riki",
+			"tiny",
+			"batrider",
+			"skeleton_king",
+			"oracle",
+			"lion",
+			"terrorblade",
+			"death_prophet",
+			"doom_bringer",
+			"nyx_assassin"
+		],
+		"notes": "dp doom & lion dead"
+	},
+	{
+		"clip": "https://clips.twitch.tv/LongCleverAyeayeOSkomodo",
+		"slug": "LongCleverAyeayeOSkomodo",
+		"heroes": [
+			"abaddon",
+			"antimage",
+			"vengefulspirit",
+			"nyx_assassin",
+			"ember_spirit",
+			"phantom_assassin",
+			"razor",
+			"tiny",
+			"dark_seer",
+			"disruptor"
+		],
+		"notes": "razor, disruptor dead"
+	},
+	{
+		"clip": "https://clips.twitch.tv/PunchyNiceBunnyHassanChop",
+		"slug": "PunchyNiceBunnyHassanChop",
+		"heroes": [
+			"bane",
+			"ember_spirit",
+			"slardar",
+			"earth_spirit",
+			"tinker",
+			"grimstroke",
+			"storm_spirit",
+			"undying",
+			"monkey_king",
+			"bounty_hunter"
+		]
+	},
+	{
+		"clip": "https://clips.twitch.tv/AbstruseSarcasticGerbilEleGiggle",
+		"slug": "AbstruseSarcasticGerbilEleGiggle",
+		"heroes": [
+			"crystal_maiden",
+			"beastmaster",
+			"sniper",
+			"mars",
+			"magnataur",
+			"medusa",
+			"pudge",
+			"jakiro",
+			"bloodseeker",
+			"necrolyte"
+		]
 	}
 ]

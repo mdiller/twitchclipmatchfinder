@@ -37,6 +37,25 @@ def check_names():
 			if not hero in names:
 				logprint(hero)
 
+def create_positions():
+	positions = []
+	for clip_info in testdata:
+		clip_frame = get_first_clip_frame(clip_info["slug"])
+		image = Image.open(clip_frame).convert("RGB")
+		image_ratio = image.size[1] / 2160
+		matches = find_heroes(clip_frame, cv2.TM_CCOEFF_NORMED)
+		temp = []
+		for match in matches:
+			temp.append(match.point[0] / image_ratio)
+		positions.append(temp)
+	for i in range(10):
+		total = 0
+		for clip_pos in positions:
+			total += clip_pos[i]
+		total = total / len(positions)
+		print(total)
+
+
 def test_clip(clip_info, method):
 	logprint(f"testing:{clip_info['slug']}")
 	heroes = []
@@ -46,7 +65,7 @@ def test_clip(clip_info, method):
 
 	clip_frame = get_first_clip_frame(clip_info["slug"])
 
-	matches = find_heroes(clip_frame, method, 15, False)
+	matches = find_heroes(clip_frame, method, 5, True)
 	missing = heroes.copy()
 	extra = []
 
@@ -74,17 +93,17 @@ def test_clip(clip_info, method):
 			logprint(f"- {hero}")
 	else:
 		logprint("found all!")
+
 	logprint("\n")
+
 
 for clip in testdata:
 	test_clip(clip, cv2.TM_CCOEFF_NORMED)
-
-# test_clip(testdata[2])
-
 with open("temp/testlog.txt", "w+") as f:
 	f.write(testlog)
 
 
-#    4
-# 4     4
-#    16
+# check_names()
+
+
+# create_positions()
