@@ -1,6 +1,7 @@
 [
 	{
 		"clip": "https://www.twitch.tv/peterpandam/clip/AmericanNurturingDiscEleGiggle",
+		"slug": "AmericanNurturingDiscEleGiggle",
 		"heroes": [
 			"nevermore",
 			"ancient_apparition",
@@ -16,6 +17,7 @@
 	},
 	{
 		"clip": "https://clips.twitch.tv/BillowingHedonisticSamosaPeteZarollTie",
+		"slug": "BillowingHedonisticSamosaPeteZarollTie",
 		"heroes": [
 			"naga_siren",
 			"alchemist",
@@ -31,6 +33,7 @@
 	},
 	{
 		"clip": "https://clips.twitch.tv/LachrymoseHilariousWhaleFloof",
+		"slug": "LachrymoseHilariousWhaleFloof",
 		"heroes": [
 			"bounty_hunter",
 			"rubick",
@@ -47,6 +50,7 @@
 	},
 	{
 		"clip": "https://clips.twitch.tv/CuteSucculentScorpionAMPEnergy",
+		"slug": "CuteSucculentScorpionAMPEnergy",
 		"heroes": [
 			"techies",
 			"ancient_apparition",

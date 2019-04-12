@@ -1,68 +1,129 @@
 import cv2
 import numpy as np
 import requests
+import os
+import json
 from PIL import Image
 from dotabase import *
 
 
 session = dotabase_session()
 
+vpk_url = "http://dotabase.dillerm.io/dota-vpk"
+vpk_cache = "cache/vpk"
 
-def get_template(vpk_png_path):
-	image = Image.open("vpk" + vpk_png_path).convert("RGB")
-	image.thumbnail((64, 36))
+arcana_images = {}
+with open("arcana_links.json", "r") as f:
+	arcana_images = json.loads(f.read())
+
+def save_content(filename, data):
+	file_dir = os.path.dirname(filename)
+	if not os.path.exists(file_dir):
+		os.makedirs(file_dir)
+	with open(filename, "wb+") as f:
+		f.write(data)
+
+
+def get_template(vpk_png_path, width):
+	local_file = vpk_cache + vpk_png_path
+	if not os.path.exists(local_file):
+		remote_url = vpk_url + vpk_png_path
+		r = requests.get(remote_url)
+		save_content(local_file, r.content)
+
+	# this gets the right ratio for a hero image
+	height = int(0.5625 * width)
+	image = Image.open(local_file).convert("RGB")
+	image.thumbnail((width, height))
+
+	modifier = width / 128
+	# crop to not include the edges or the bottom section where dota plus icons show up
+	image = image.crop((
+		int(8 * modifier),
+		int(8 * modifier),
+		image.size[0] - (8 * modifier),
+		image.size[1] - (32 * modifier)
+	))
 	return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY)
 
-game_image = Image.open("cache/CuteSucculentScorpionAMPEnergy.png").convert("RGB")
-game_image = game_image.crop((0, 0, game_image.size[0], 42))
-img = cv2.cvtColor(np.asarray(game_image), cv2.COLOR_RGB2GRAY)
-# img = cv2.imread("game.jpg", 0)
-img2 = img.copy()
+class HeroMatch():
+	def __init__(self, hero, hero_width):
+		self.hero = hero
+		self.hero_width = hero_width
+		self.images = []
+		self.point = None
+		self.score = None
+		self.add_image(hero.image)
+		if str(hero.id) in arcana_images:
+			for img in arcana_images[str(hero.id)]:
+				self.add_image(img)
 
-# All the 6 methods for comparison in a list
-methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
-			'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
-for meth in methods:
-	print(meth)
-	method = eval(meth)
-	matches = []
-	for hero in session.query(Hero):
-		template = get_template(hero.image)
-		w, h = template.shape[::-1]
+	def add_image(self, vpk_img_path):
+		self.images.append(get_template(vpk_img_path, self.hero_width))
 
-		img = img2.copy()
+	@classmethod
+	def get_all(cls, width):
+		result = []
+		for hero in session.query(Hero):
+			result.append(HeroMatch(hero, width))
+		return result
 
-		# Apply template Matching
-		res = cv2.matchTemplate(img,template,method)
-		min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+	def is_point_valid(self):
+		y = self.hero_width / 8
+		return self.point[1] + 1 > y and self.point[1] - 1 < y
 
-		# If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
-		if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-			top_left = min_loc
-			the_val = min_val
-		else:
-			top_left = max_loc
-			the_val = max_val
-		bottom_right = (top_left[0] + w, top_left[1] + h)
+	def __str__(self):
+		return f"{self.hero.localized_name.rjust(20)}: {str(self.point).rjust(10)} [{self.score}]"
 
-		# cv2.rectangle(img, top_left, bottom_right, 255, 2)
-		if (top_left[1] < 5):
-			matches.append({
-				"hero": hero,
-				"point": top_left,
-				"value": the_val
-			})
 
-		# print(f"{hero.localized_name}: {top_left}, {bottom_right} ({the_val})")
 
-	take_count = 15
+# matching_methods = ["cv2.TM_CCOEFF", "cv2.TM_CCOEFF_NORMED", "cv2.TM_CCORR",
+# 	"cv2.TM_CCORR_NORMED", "cv2.TM_SQDIFF", "cv2.TM_SQDIFF_NORMED"]
 
-	reverse = meth in ["cv2.TM_COEFF", "cv2.TM_CCOEFF_NORMED", "cv2.TM_CCORR_NORMED"]
 
-	matches = sorted(matches, key=lambda m: m["value"], reverse=reverse)
-	matches = matches[:take_count]
-	# matches = sorted(matches, key=lambda m: m["point"][0], reverse=True)
+# removed the ones that are bad
+matching_methods = ["cv2.TM_CCOEFF_NORMED", "cv2.TM_CCORR_NORMED", "cv2.TM_SQDIFF", "cv2.TM_SQDIFF_NORMED"]
 
+def find_heroes(match_image_path, method, return_count=10, sort_result=True):
+	game_image = Image.open(match_image_path).convert("RGB")
+	game_image = game_image.crop((0, 0, game_image.size[0], 42))
+	img = cv2.cvtColor(np.asarray(game_image), cv2.COLOR_RGB2GRAY)
+	# img = cv2.imread("game.jpg", 0)
+	img2 = img.copy()
+
+	matches = HeroMatch.get_all(64)
 	for match in matches:
-		print(f"{match['hero'].localized_name}: {match['point']}    [{match['value']}]")
-	print("\n")
+		for template in match.images:
+			w, h = template.shape[::-1]
+
+			img = img2.copy()
+
+			# Apply template Matching
+			result = cv2.matchTemplate(img, template, method)
+			min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+			# If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
+			if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+				top_left = min_loc
+				score = 0 - min_val
+			else:
+				top_left = max_loc
+				score = max_val
+
+			if match.score is None or match.score < score:
+				match.score = score
+				match.point = top_left
+
+	matches = list(filter(lambda m: m.is_point_valid(), matches))
+
+	matches = sorted(matches, key=lambda m: m.score, reverse=True)
+	matches = matches[:return_count]
+	if sort_result:
+		matches = sorted(matches, key=lambda m: m.point[0])
+
+	return matches
+
+# matches = find_heroes("cache/CuteSucculentScorpionAMPEnergy.png", cv2.TM_CCOEFF, 15)
+
+# for match in matches:
+# 	print(match)
