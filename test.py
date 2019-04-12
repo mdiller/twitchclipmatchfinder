@@ -1,12 +1,31 @@
 from dotabase import *
 import json
 from finder import *
+from clipprocessing import *
+import cv2
 
 session = dotabase_session()
 
 with open("tests/testdata.json", "r") as f:
 	text = f.read()
 testdata = json.loads(text)
+
+testlog = ""
+
+def logprint(text):
+	global testlog
+	testlog += str(text) + "\n"
+	print(text, flush=True)
+
+def dump_templates(match):
+	count = 0
+	for img in match.images:
+		postfix = ""
+		if count:
+			postfix = f"_{count}"
+		count += 1
+		cv2.imwrite(f"cache/templates/{match.hero.name}{postfix}.png", img)
+
 
 def check_names():
 	names = []
@@ -16,42 +35,54 @@ def check_names():
 	for thing in testdata:
 		for hero in thing["heroes"]:
 			if not hero in names:
-				print(hero)
+				logprint(hero)
 
-def test_clip(clip_info):
-	print("testing:", clip_info["slug"])
+def test_clip(clip_info, method):
+	logprint(f"testing:{clip_info['slug']}")
 	heroes = []
 	for hero in session.query(Hero):
 		if hero.name in clip_info["heroes"]:
 			heroes.append(hero.localized_name)
 
-	for meth in matching_methods:
-		print(meth)
-		matches = find_heroes(f"cache/{clip_info['slug']}.png", eval(meth))
-		missing = heroes.copy()
-		extra = []
+	clip_frame = get_first_clip_frame(clip_info["slug"])
 
-		for match in matches:
-			print(match)
-			if match.hero.localized_name in missing:
-				missing.remove(match.hero.localized_name)
-			else:
-				extra.append(match.hero.localized_name)
+	matches = find_heroes(clip_frame, method, 15, False)
+	missing = heroes.copy()
+	extra = []
 
-		if missing or extra:
-			print("missing:")
-			for hero in missing:
-				print(f"- {hero}")
-			print("extra:")
-			for hero in extra:
-				print(f"- {hero}")
+	for i in range(len(matches)):
+		match = matches[i]
+		if i == 10:
+			logprint("-----------------------------------------------------")
+		logprint(match)
+		# dump_templates(match)
+
+	matches = matches[:10]
+
+	for match in matches:
+		if match.hero.localized_name in missing:
+			missing.remove(match.hero.localized_name)
 		else:
-			print("found all!")
+			extra.append(match.hero.localized_name)
 
-		print("\n", flush=True)
+	if missing or extra:
+		logprint("missing:")
+		for hero in missing:
+			logprint(f"- {hero}")
+		logprint("extra:")
+		for hero in extra:
+			logprint(f"- {hero}")
+	else:
+		logprint("found all!")
+	logprint("\n")
 
+for clip in testdata:
+	test_clip(clip, cv2.TM_CCOEFF_NORMED)
 
-test_clip(testdata[3])
+# test_clip(testdata[2])
+
+with open("temp/testlog.txt", "w+") as f:
+	f.write(testlog)
 
 
 #    4

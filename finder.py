@@ -23,7 +23,6 @@ def save_content(filename, data):
 	with open(filename, "wb+") as f:
 		f.write(data)
 
-
 def get_template(vpk_png_path, width):
 	local_file = vpk_cache + vpk_png_path
 	if not os.path.exists(local_file):
@@ -32,7 +31,7 @@ def get_template(vpk_png_path, width):
 		save_content(local_file, r.content)
 
 	# this gets the right ratio for a hero image
-	height = int(0.5625 * width)
+	height = round(0.5625 * width)
 	image = Image.open(local_file).convert("RGB")
 	image.thumbnail((width, height))
 
@@ -47,9 +46,9 @@ def get_template(vpk_png_path, width):
 	return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY)
 
 class HeroMatch():
-	def __init__(self, hero, hero_width):
+	def __init__(self, hero, size_ratio):
 		self.hero = hero
-		self.hero_width = hero_width
+		self.hero_width = round(128 * size_ratio)
 		self.images = []
 		self.point = None
 		self.score = None
@@ -68,9 +67,9 @@ class HeroMatch():
 			result.append(HeroMatch(hero, width))
 		return result
 
-	def is_point_valid(self):
-		y = self.hero_width / 8
-		return self.point[1] + 1 > y and self.point[1] - 1 < y
+	def is_point_valid(self, tolerance):
+		y = round(self.hero_width / 8)
+		return self.point[1] + tolerance > y and self.point[1] - tolerance < y
 
 	def __str__(self):
 		return f"{self.hero.localized_name.rjust(20)}: {str(self.point).rjust(10)} [{self.score}]"
@@ -86,12 +85,14 @@ matching_methods = ["cv2.TM_CCOEFF_NORMED", "cv2.TM_CCORR_NORMED", "cv2.TM_SQDIF
 
 def find_heroes(match_image_path, method, return_count=10, sort_result=True):
 	game_image = Image.open(match_image_path).convert("RGB")
-	game_image = game_image.crop((0, 0, game_image.size[0], 42))
+	# ratio between full hero size and the one in this image
+	image_ratio = game_image.size[1] / 2160
+
+	game_image = game_image.crop((0, 0, game_image.size[0], int(84 * image_ratio)))
 	img = cv2.cvtColor(np.asarray(game_image), cv2.COLOR_RGB2GRAY)
-	# img = cv2.imread("game.jpg", 0)
 	img2 = img.copy()
 
-	matches = HeroMatch.get_all(64)
+	matches = HeroMatch.get_all(image_ratio)
 	for match in matches:
 		for template in match.images:
 			w, h = template.shape[::-1]
@@ -114,7 +115,7 @@ def find_heroes(match_image_path, method, return_count=10, sort_result=True):
 				match.score = score
 				match.point = top_left
 
-	matches = list(filter(lambda m: m.is_point_valid(), matches))
+	matches = list(filter(lambda m: m.is_point_valid(2), matches))
 
 	matches = sorted(matches, key=lambda m: m.score, reverse=True)
 	matches = matches[:return_count]

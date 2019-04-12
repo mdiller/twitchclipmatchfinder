@@ -52,4 +52,4 @@ def get_first_clip_frame(slug):
 		cv2.imwrite(frame_filename, image)
 	return frame_filename
 
-get_first_clip_frame("CuteSucculentScorpionAMPEnergy")
+# get_first_clip_frame("CuteSucculentScorpionAMPEnergy")
