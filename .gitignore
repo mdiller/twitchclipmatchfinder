@@ -4,3 +4,5 @@ temp/
 notes.md
 cache/
 config.json
+
+reddit_cache.json
