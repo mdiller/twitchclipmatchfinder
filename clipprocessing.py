@@ -16,7 +16,7 @@ with open("config.json", "r") as f:
 def cache_filename(slug, ext):
 	return os.path.join(cache_dir, f"{slug}.{ext}")
 
-def retrieve_mp4_data(slug):
+def retrieve_clip_info(slug):
 	filename = cache_filename(slug, "json")
 	if os.path.exists(filename):
 		with open(filename, "r") as f:
@@ -41,7 +41,7 @@ def get_first_clip_frame(slug):
 	frame_filename = cache_filename(slug, "png")
 	if not os.path.exists(frame_filename):
 		if not os.path.exists(mp4_filename):
-			data = retrieve_mp4_data(slug)
+			data = retrieve_clip_info(slug)
 			mp4_url = data["mp4_url"]
 			r = requests.get(mp4_url)
 			with open(mp4_filename, "wb+") as f:

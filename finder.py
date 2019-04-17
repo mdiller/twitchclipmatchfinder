@@ -4,6 +4,9 @@ import requests
 import os
 import json
 from PIL import Image
+import clipprocessing
+import sys
+import datetime
 from dotabase import *
 
 
@@ -162,3 +165,88 @@ def find_heroes(match_image_path, method=cv2.TM_CCOEFF_NORMED, extra_count=0, so
 		final_matches.extend(matches[:extra_count])
 
 	return final_matches
+
+# indicates something went wrong when finding this match
+class ClipFinderException(Exception):
+	def __init__(self, message=None, heroes=None):
+		super().__init__(message)
+		self.heroes = heroes or []
+
+# there was an error loading the clip
+class ClipLoadingException(ClipFinderException):
+	pass
+
+# couldn't find all the heroes in this clip, or we weren't confident enough in our findings
+class HeroFindingException(ClipFinderException):
+	pass
+
+# couldn't find the match in the findMatches results
+class MatchNotFoundException(ClipFinderException):
+	pass
+
+# the match occured before all of the findMatches functionality was available
+class MatchTooEarlyException(ClipFinderException):
+	pass
+
+def find_match(slug):
+	try:
+		clip_info = clipprocessing.retrieve_clip_info(slug)
+		clip_frame = clipprocessing.get_first_clip_frame(slug)
+	except Exception as e:
+		raise ClipLoadingException() from e
+
+	heroes = find_heroes(clip_frame)
+
+	if len(heroes) != 10:
+		raise HeroFindingException(heroes=heroes)
+	unsure_count = 0
+	for hero_match in heroes:
+		if hero_match.score < 0.75:
+			unsure_count += 1
+	if unsure_count > 5:
+		raise HeroFindingException(heroes=heroes)
+
+	teama = []
+	teamb = []
+	for i in range(5):
+		teama.append(heroes[i].hero.id)
+	for i in range(5, 10):
+		teamb.append(heroes[i].hero.id)
+
+	teama = "&".join(map(lambda p: f"teamA={p}", teama))
+	teamb = "&".join(map(lambda p: f"teamB={p}", teamb))
+	url = f"https://api.opendota.com/api/findMatches?{teama}&{teamb}"
+
+	timestamp = datetime.datetime.strptime(clip_info["created_at"], '%Y-%m-%dT%H:%M:%SZ')
+	timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
+
+	if timestamp < 1555200000:
+		raise MatchTooEarlyException(heroes=heroes)
+
+	found_matches = requests.get(url).json()
+	best_match = None
+	for match in found_matches:
+		if match["start_time"] < timestamp:
+			if best_match is None or match["start_time"] > best_match["start_time"]:
+				best_match = match
+	if best_match is None:
+		raise MatchNotFoundException(heroes=heroes)
+
+	minutes_diff = (timestamp - match["start_time"]) // 60
+
+	return {
+		"match_id": match["match_id"],
+		"minutes_diff": minutes_diff,
+		"heroes": heroes
+	}
+
+
+if __name__ == '__main__':
+	if len(sys.argv) > 1:
+		slug = sys.argv[1]
+		match = find_match(slug)
+		print("matched for the following heroes:")
+		for hero_match in match["heroes"]:
+			print(hero_match)
+		print(f"found match {match['match_id']}, started {match['minutes_diff']} minutes before the clip was taken.")
+		print(f"https://www.opendota.com/matches/{match['match_id']}")
