@@ -42,7 +42,7 @@ def bot_check_posts():
 	for post in reddit.subreddit("dota2").new(limit=100):
 		if post.id in cache["replied_posts"]:
 			continue # already replied to this post
-		match = re.match(r"^https?://clips\.twitch\.tv/(.*)$", post.url)
+		match = re.match(r"^https?://clips\.twitch\.tv/([^\?]*)(\?.*)?$", post.url)
 		if match:
 			slug = match.group(1)
 			match_info = None

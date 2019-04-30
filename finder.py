@@ -188,7 +188,12 @@ class MatchNotFoundException(ClipFinderException):
 class MatchTooEarlyException(ClipFinderException):
 	pass
 
+# an error occured when parsing the json from opendota
+class OpendotaApiException(ClipFinderException):
+	pass
+
 def find_match(slug):
+	print(f"finding for {slug}")
 	try:
 		clip_info = clipprocessing.retrieve_clip_info(slug)
 		clip_frame = clipprocessing.get_first_clip_frame(slug)
@@ -223,7 +228,11 @@ def find_match(slug):
 	if timestamp < 1555200000:
 		raise MatchTooEarlyException(heroes=heroes)
 
-	found_matches = requests.get(url).json()
+	try:
+		found_matches = requests.get(url).json()
+	except json.decoder.JSONDecodeError as e:
+		raise OpendotaApiException from e
+
 	best_match = None
 	for match in found_matches:
 		if match["start_time"] < timestamp:

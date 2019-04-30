@@ -6,3 +6,5 @@ cache/
 config.json
 
 reddit_cache.json
+
+__pycache__/
