@@ -168,9 +168,17 @@ def find_heroes(match_image_path, method=cv2.TM_CCOEFF_NORMED, extra_count=0, so
 
 # indicates something went wrong when finding this match
 class ClipFinderException(Exception):
-	def __init__(self, message=None, heroes=None):
-		super().__init__(message)
-		self.heroes = heroes or []
+	def __init__(self, message=None, heroes=()):
+		super().__init__()
+		self.message = message
+		self.heroes = heroes
+
+	def __str__(self):
+		name = type(self).__name__
+		if self.message:
+			return '{}: {}'.format(name, self.message)
+		else:
+			return name
 
 # there was an error loading the clip
 class ClipLoadingException(ClipFinderException):
@@ -226,7 +234,7 @@ def find_match(slug):
 	try:
 		found_matches = requests.get(url).json()
 	except json.decoder.JSONDecodeError as e:
-		raise OpendotaApiException from e
+		raise OpendotaApiException() from e
 
 	best_match = None
 	for match in found_matches:

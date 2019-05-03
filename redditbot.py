@@ -48,7 +48,7 @@ def bot_check_posts(reddit):
 			try:
 				match_info = finder.find_match(slug)
 			except finder.ClipFinderException as e:
-				print(f"encountered {type(e).__name__} for slug {slug} on post {post.id}")
+				print(f"encountered {e} for slug {slug} on post {post.id}")
 				pass
 			if match_info is not None:
 				print(f"found match {match_info['match_id']} on post {post.id}, via slug {slug}")
