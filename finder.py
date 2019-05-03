@@ -1,15 +1,17 @@
-import cv2
-import numpy as np
 import collections
-import itertools
-import requests
-import os
-import json
-from PIL import Image
-import clipprocessing
-import sys
 import datetime
+import itertools
+import json
+import os
+import sys
+
+import cv2
 from dotabase import *
+import numpy as np
+from PIL import Image
+import requests
+
+import clipprocessing
 
 
 session = dotabase_session()

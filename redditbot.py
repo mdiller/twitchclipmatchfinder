@@ -1,9 +1,12 @@
 import json
-import praw
-import time
 import os
 import re
+import time
+
+import praw
+
 import finder
+
 
 with open("config.json", "r") as f:
 	config = json.loads(f.read())

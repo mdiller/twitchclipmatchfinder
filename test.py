@@ -1,8 +1,11 @@
-from dotabase import *
 import json
-from finder import *
-from clipprocessing import *
+
 import cv2
+from dotabase import *
+
+from clipprocessing import *
+from finder import *
+
 
 session = dotabase_session()
 

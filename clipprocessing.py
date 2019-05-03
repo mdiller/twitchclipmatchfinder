@@ -1,7 +1,8 @@
-import requests
 import json
-import cv2
 import os
+
+import cv2
+import requests
 
 config = {}
 
