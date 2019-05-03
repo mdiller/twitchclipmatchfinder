@@ -22,7 +22,7 @@ def retrieve_clip_info(slug):
 		with open(filename, "r") as f:
 			return json.loads(f.read())
 	else:
-		clip_info = requests.get(f"https://api.twitch.tv/helix/clips?id={slug}", 
+		clip_info = requests.get(f"https://api.twitch.tv/helix/clips?id={slug}",
 			headers= {"Client-ID": config["twitch"]["client_id"]}).json()
 		data = clip_info["data"][0]
 
