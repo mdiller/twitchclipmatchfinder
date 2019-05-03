@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import itertools
 import requests
 import os
 import json
@@ -236,18 +237,19 @@ def find_match(slug):
 	except json.decoder.JSONDecodeError as e:
 		raise OpendotaApiException() from e
 
-	best_match = None
-	for match in found_matches:
-		if match["start_time"] < timestamp:
-			if best_match is None or match["start_time"] > best_match["start_time"]:
-				best_match = match
-	if best_match is None:
+	# Find the latest match that's earlier than `timestamp`.
+	start_time = itertools.itemgetter("start_time")
+	try:
+		best_match = max(
+			filter(found_matches, lambda match: start_time(match) < timestamp),
+			key=start_time)
+	except ValueError:
 		raise MatchNotFoundException(heroes=heroes)
 
-	minutes_diff = (timestamp - match["start_time"]) // 60
+	minutes_diff = (timestamp - best_match["start_time"]) // 60
 
 	return {
-		"match_id": match["match_id"],
+		"match_id": best_match["match_id"],
 		"minutes_diff": minutes_diff,
 		"heroes": heroes
 	}
