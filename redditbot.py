@@ -9,7 +9,6 @@ with open("config.json", "r") as f:
 	config = json.loads(f.read())
 
 cache_file = "reddit_cache.json"
-reddit = None
 
 reddit_me = "/u/EuphonicPotato"
 github_url = "https://github.com/mdiller/twitchclipmatchfinder"
@@ -37,7 +36,7 @@ def create_reddit_response(match_info):
 	response += reddit_comment_footer
 	return response
 
-def bot_check_posts():
+def bot_check_posts(reddit):
 	cache = read_cache()
 	for post in reddit.subreddit("dota2").new(limit=100):
 		if post.id in cache["replied_posts"]:
@@ -63,14 +62,14 @@ def bot_check_posts():
 				save_cache(cache)
 
 def run_bot():
-	global reddit
-	reddit = praw.Reddit(client_id=config["reddit"]["client_id"],
-		client_secret=config["reddit"]["client_secret"],
-		user_agent=config["reddit"]["user_agent"],
-		username=config["reddit"]["username"],
-		password=config["reddit"]["password"])
+	reddit_config = config["reddit"]
+	reddit = praw.Reddit(client_id=reddit_config["client_id"],
+		client_secret=reddit_config["client_secret"],
+		user_agent=reddit_config["user_agent"],
+		username=reddit_config["username"],
+		password=reddit_config["password"])
 	while True:
-		bot_check_posts()
+		bot_check_posts(reddit)
 		time.sleep(60)
 
 
