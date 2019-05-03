@@ -29,10 +29,10 @@ def save_cache(cache):
 		f.write(json.dumps(cache, indent="\t"))
 
 def create_reddit_response(match_info):
-	# for hero_match in match_info["heroes"]:
+	# for hero_match in match_info.heroes:
 	# 	print(hero_match)
-	response = f"Looks like this is match {match_info['match_id']}, which started {match_info['minutes_diff']} minutes before the clip was taken."
-	response += f"\n\nhttps://www.opendota.com/matches/{match_info['match_id']}"
+	response = f"Looks like this is match {match_info.match}, which started {match_info.minutes_diff} minutes before the clip was taken."
+	response += f"\n\nhttps://www.opendota.com/matches/{match_info.id}"
 	response += reddit_comment_footer
 	return response
 
@@ -44,22 +44,20 @@ def bot_check_posts(reddit):
 		match = re.match(r"^https?://clips\.twitch\.tv/([^\?]*)(\?.*)?$", post.url)
 		if match:
 			slug = match.group(1)
-			match_info = None
 			try:
 				match_info = finder.find_match(slug)
 			except finder.ClipFinderException as e:
 				print(f"encountered {e} for slug {slug} on post {post.id}")
 				pass
-			if match_info is not None:
-				print(f"found match {match_info['match_id']} on post {post.id}, via slug {slug}")
-				response = create_reddit_response(match_info)
-				try:
-					post.reply(response)
-				except praw.exceptions.APIException as e:
-					print("getting ratelimited, quitting")
-					return
-				cache["replied_posts"].append(post.id)
-				save_cache(cache)
+			print(f"found match {match_info.id} on post {post.id}, via slug {slug}")
+			response = create_reddit_response(match_info)
+			try:
+				post.reply(response)
+			except praw.exceptions.APIException as e:
+				print("getting ratelimited, quitting")
+				return
+			cache["replied_posts"].append(post.id)
+			save_cache(cache)
 
 def run_bot():
 	reddit_config = config["reddit"]

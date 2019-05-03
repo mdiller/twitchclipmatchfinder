@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import collections
 import itertools
 import requests
 import os
@@ -201,6 +202,8 @@ class MatchTooEarlyException(ClipFinderException):
 class OpendotaApiException(ClipFinderException):
 	pass
 
+Match = collections.namedtuple("Match", ["id", "minutes_diff", "heroes"])
+
 def find_match(slug):
 	print(f"finding for {slug}")
 	try:
@@ -248,11 +251,7 @@ def find_match(slug):
 
 	minutes_diff = (timestamp - best_match["start_time"]) // 60
 
-	return {
-		"match_id": best_match["match_id"],
-		"minutes_diff": minutes_diff,
-		"heroes": heroes
-	}
+	return Match(match["match_id"], minutes_diff, heroes)
 
 
 if __name__ == '__main__':
@@ -260,7 +259,7 @@ if __name__ == '__main__':
 		slug = sys.argv[1]
 		match = find_match(slug)
 		print("matched for the following heroes:")
-		for hero_match in match["heroes"]:
+		for hero_match in match.heroes:
 			print(hero_match)
-		print(f"found match {match['match_id']}, started {match['minutes_diff']} minutes before the clip was taken.")
-		print(f"https://www.opendota.com/matches/{match['match_id']}")
+		print(f"found match {match.id}, started {match.minutes_diff} minutes before the clip was taken.")
+		print(f"https://www.opendota.com/matches/{match.match_id}")
