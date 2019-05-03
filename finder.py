@@ -211,15 +211,10 @@ def find_match(slug):
 	if unsure_count > 5:
 		raise HeroFindingException(heroes=heroes)
 
-	teama = []
-	teamb = []
-	for i in range(5):
-		teama.append(heroes[i].hero.id)
-	for i in range(5, 10):
-		teamb.append(heroes[i].hero.id)
-
-	teama = "&".join(map(lambda p: f"teamA={p}", teama))
-	teamb = "&".join(map(lambda p: f"teamB={p}", teamb))
+	heroes_a = [heroes[i].hero.id for i in range(5)]
+	heroes_b = [heroes[i].hero.id for i in range(5, 10)]
+	team_a = "&".join(map("teamA={}".format, heroes_a))
+	team_b = "&".join(map("teamB={}".format, heroes_b))
 	url = f"https://api.opendota.com/api/findMatches?{teama}&{teamb}"
 
 	timestamp = datetime.datetime.strptime(clip_info["created_at"], '%Y-%m-%dT%H:%M:%SZ')
