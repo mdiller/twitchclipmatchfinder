@@ -1,0 +1,5 @@
+dotabase>=4.7.0
+numpy>=1.15.1
+opencv-python>=3.4.1.15
+Pillow>=4.0.0
+requests>=2.21.0
