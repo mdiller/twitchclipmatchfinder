@@ -40,5 +40,12 @@
 	],
 	"22": [
 		"/panorama/images/heroes/npc_dota_hero_zuus_alt1_png.png"
+	],
+	"2": [
+		"/panorama/images/heroes/npc_dota_hero_axe_alt_png.png"
+	],
+	"7": [
+		"/panorama/images/heroes/npc_dota_hero_earthshaker_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_earthshaker_alt2_png.png"
 	]
 }
