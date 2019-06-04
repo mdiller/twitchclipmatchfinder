@@ -188,7 +188,7 @@ class MatchNotFoundException(ClipFinderException):
 class MatchTooEarlyException(ClipFinderException):
 	pass
 
-# an error occured when parsing the json from opendota
+# an error occured when requesting data from the opendota api
 class OpendotaApiException(ClipFinderException):
 	pass
 
@@ -229,7 +229,10 @@ def find_match(slug):
 		raise MatchTooEarlyException(heroes=heroes)
 
 	try:
-		found_matches = requests.get(url).json()
+		response = requests.get(url)
+		if response.status_code != 200:
+			raise OpendotaApiException(heroes=heroes)
+		found_matches = response.json()
 	except json.decoder.JSONDecodeError as e:
 		raise OpendotaApiException from e
 

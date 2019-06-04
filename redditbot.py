@@ -1,9 +1,11 @@
 import json
 import praw
+import prawcore
 import time
 import os
 import re
 import finder
+
 
 with open("config.json", "r") as f:
 	config = json.loads(f.read())
@@ -30,8 +32,6 @@ def save_cache(cache):
 		f.write(json.dumps(cache, indent="\t"))
 
 def create_reddit_response(match_info):
-	# for hero_match in match_info["heroes"]:
-	# 	print(hero_match)
 	response = f"Looks like this is match {match_info['match_id']}, which started {match_info['minutes_diff']} minutes before the clip was taken."
 	response += f"\n\nhttps://www.opendota.com/matches/{match_info['match_id']}"
 	response += reddit_comment_footer
@@ -70,7 +70,12 @@ def run_bot():
 		username=config["reddit"]["username"],
 		password=config["reddit"]["password"])
 	while True:
-		bot_check_posts()
+		try:
+			bot_check_posts()
+		except prawcore.exceptions.ServerError:
+			print("praw threw servererror, skipping")
+		except prawcore.exceptions.ResponseException:
+			print("praw threw responseexception, skipping")
 		time.sleep(60)
 
 
