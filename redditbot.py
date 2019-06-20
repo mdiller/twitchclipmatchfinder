@@ -38,7 +38,7 @@ def create_reddit_response(match_info):
 	else:
 		response += f", which started {match_info['minutes_diff']} minutes before the clip was taken."
 
-	response = "\n\nMore match details here:\n"
+	response += "\n\nMore match details here:\n"
 	match_id = match_info['match_id']
 	response += f"\n- [OpenDota](https://www.opendota.com/matches/{match_id})"
 	response += f"\n- [Dotabuff](https://www.dotabuff.com/matches/{match_id})"
