@@ -13,9 +13,9 @@ with open("config.json", "r") as f:
 cache_file = "reddit_cache.json"
 reddit = None
 
-reddit_me = "/u/EuphonicPotato"
+reddit_me = "^[/u\/EuphonicPotato](/user/EuphonicPotato)"
 github_url = "https://github.com/mdiller/twitchclipmatchfinder"
-reddit_comment_footer = f"\n\n---\n*^I ^am ^a ^bot. ^Question/problem? ^Ask ^the ^guy ^who ^made ^(me: {reddit_me})*\n\n*^(Source/Description:)* [*^(GitHub)*]({github_url})"
+reddit_comment_footer = f"\n\n---\n*^I ^am ^a ^bot ^created ^by {reddit_me}*\n\n*^(Source/Description:)* [*^(GitHub)*]({github_url})"
 
 
 def read_cache():
@@ -33,7 +33,11 @@ def save_cache(cache):
 
 def create_reddit_response(match_info):
 	response = f"Looks like this is match {match_info['match_id']}, which started {match_info['minutes_diff']} minutes before the clip was taken."
-	response += f"\n\nhttps://www.opendota.com/matches/{match_info['match_id']}"
+	response = "\n\nMore match details here:\n"
+	match_id = match_info['match_id']
+	response += f"\n- [OpenDota](https://www.opendota.com/matches/{match_id})"
+	response += f"\n- [Dotabuff](https://www.dotabuff.com/matches/{match_id})"
+	response += f"\n- [Stratz](https://www.stratz.com/matches/{match_id})"
 	response += reddit_comment_footer
 	return response
 
