@@ -32,7 +32,12 @@ def save_cache(cache):
 		f.write(json.dumps(cache, indent="\t"))
 
 def create_reddit_response(match_info):
-	response = f"Looks like this is match {match_info['match_id']}, which started {match_info['minutes_diff']} minutes before the clip was taken."
+	response = f"Looks like this is match {match_info['match_id']}"
+	if match_info.get("better_minutes_diff"):
+		response += f", which started {match_info['better_minutes_diff']} minutes before the clip was recorded."
+	else:
+		response += f", which started {match_info['minutes_diff']} minutes before the clip was taken."
+
 	response = "\n\nMore match details here:\n"
 	match_id = match_info['match_id']
 	response += f"\n- [OpenDota](https://www.opendota.com/matches/{match_id})"

@@ -22,14 +22,25 @@ def retrieve_clip_info(slug):
 		with open(filename, "r") as f:
 			return json.loads(f.read())
 	else:
-		clip_info = requests.get(f"https://api.twitch.tv/helix/clips?id={slug}", 
-			headers= {"Client-ID": config["twitch"]["client_id"]}).json()
-		data = clip_info["data"][0]
+		data = requests.get(f"https://api.twitch.tv/kraken/clips/{slug}",
+			headers= {
+			"Client-ID": config["twitch"]["client_id"],
+			"Accept": "application/vnd.twitchtv.v5+json"
+		}).json()
 
-		thumb_url = data['thumbnail_url']
+		thumb_url = data["thumbnails"]["medium"]
 		slice_point = thumb_url.index("-preview-")
 		mp4_url = thumb_url[:slice_point] + '.mp4'
 		data["mp4_url"] = mp4_url
+
+		if data["vod"]:
+			vod_id = data["vod"]["id"]
+			vod_data = requests.get(f"https://api.twitch.tv/kraken/videos/{vod_id}",
+				headers= {
+				"Client-ID": config["twitch"]["client_id"],
+				"Accept": "application/vnd.twitchtv.v5+json"
+			}).json()
+			data["vod_data"] = vod_data
 
 		with open(filename, "w+") as f:
 			f.write(json.dumps(data, indent="\t"))

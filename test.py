@@ -3,6 +3,8 @@ import json
 from finder import *
 from clipprocessing import *
 import cv2
+import praw
+import re
 
 session = dotabase_session()
 
@@ -96,13 +98,32 @@ def test_clip(clip_info, method):
 
 	logprint("\n")
 
+def check_reddit_clips():
+	reddit = praw.Reddit(client_id=config["reddit"]["client_id"],
+		client_secret=config["reddit"]["client_secret"],
+		user_agent=config["reddit"]["user_agent"],
+		username=config["reddit"]["username"],
+		password=config["reddit"]["password"])
 
-for clip in testdata:
-	test_clip(clip, cv2.TM_CCOEFF_NORMED)
-with open("temp/testlog.txt", "w+") as f:
-	f.write(testlog)
+	with open("reddit_cache.json", "r") as f:
+		data = json.loads(f.read())
+	for postid in data["replied_posts"]:
+		post = reddit.submission(id=postid)
+		match = re.match(r"^https?://clips\.twitch\.tv/([^\?]*)(\?.*)?$", post.url)
+		slug = match.group(1)
+		match_info = find_match(slug)
+		print(f"old: {match_info['minutes_diff']} minutes")
+		if match_info.get('other_minutes_diff'):
+			print(f"new: {match_info['other_minutes_diff']} minutes")
+		else:
+			print("new: not found")
 
+# for clip in testdata:
+# 	test_clip(clip, cv2.TM_CCOEFF_NORMED)
+# with open("temp/testlog.txt", "w+") as f:
+# 	f.write(testlog)
 
+check_reddit_clips()
 # check_names()
 
 

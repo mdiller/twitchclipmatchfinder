@@ -246,11 +246,19 @@ def find_match(slug):
 
 	minutes_diff = (timestamp - match["start_time"]) // 60
 
-	return {
+	result = {
 		"match_id": match["match_id"],
 		"minutes_diff": minutes_diff,
 		"heroes": heroes
 	}
+
+	if clip_info.get("vod_data"):
+		timestamp = datetime.datetime.strptime(clip_info["vod_data"]["created_at"], '%Y-%m-%dT%H:%M:%SZ')
+		timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
+		timestamp += clip_info["vod"]["offset"]
+		result["better_minutes_diff"] = (timestamp - match["start_time"]) // 60
+
+	return result
 
 
 if __name__ == '__main__':
@@ -260,5 +268,9 @@ if __name__ == '__main__':
 		print("matched for the following heroes:")
 		for hero_match in match["heroes"]:
 			print(hero_match)
-		print(f"found match {match['match_id']}, started {match['minutes_diff']} minutes before the clip was taken.")
+		print(f"found match {match['match_id']}")
+		print(f"started {match['minutes_diff']} minutes before the clip was taken.")
+		if match.get("better_minutes_diff"):
+			print(f"started {match['better_minutes_diff']} minutes before the clip was recorded.")
+
 		print(f"https://www.opendota.com/matches/{match['match_id']}")
