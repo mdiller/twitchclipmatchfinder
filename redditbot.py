@@ -27,6 +27,15 @@ def read_cache():
 			"replied_posts": []
 		}
 
+# clears the data cache of all files older than cache_age_limit days
+def clean_data_cache(data_cache_dir, cache_age_limit):
+	now = time.time()
+	for f in os.listdir(data_cache_dir):
+		filename = os.path.join(data_cache_dir, f)
+		if os.path.isfile(filename) and os.stat(filename).st_mtime < now - (cache_age_limit * 86400):
+			os.remove(filename)
+
+# saves the reddit cache
 def save_cache(cache):
 	with open(cache_file, "w+") as f:
 		f.write(json.dumps(cache, indent="\t"))
@@ -80,6 +89,7 @@ def run_bot():
 		password=config["reddit"]["password"])
 	while True:
 		try:
+			clean_data_cache("cache", 7) # directory, days of data to keep
 			bot_check_posts()
 		except prawcore.exceptions.ServerError:
 			print("praw threw servererror, skipping")
