@@ -1,16 +1,23 @@
 from dotabase import *
 import json
-from finder import *
-from clipprocessing import *
 import cv2
 import praw
 import re
+import os
+import sys
+import inspect
+
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir) 
+from finder import *
 
 session = dotabase_session()
 
-with open("tests/testdata.json", "r") as f:
-	text = f.read()
-testdata = json.loads(text)
+test_dir = os.path.dirname(os.path.realpath(__file__))
+
+with open(os.path.join(test_dir, "testdata.json"), "r") as f:
+	testdata = json.loads(f.read())
 
 testlog = ""
 
@@ -19,6 +26,7 @@ def logprint(text):
 	testlog += str(text) + "\n"
 	print(text, flush=True)
 
+# helper function which will show the template images
 def dump_templates(match):
 	count = 0
 	for img in match.images:
@@ -39,33 +47,15 @@ def check_names():
 			if not hero in names:
 				logprint(hero)
 
-def create_positions():
-	positions = []
-	for clip_info in testdata:
-		clip_frame = get_first_clip_frame(clip_info["slug"])
-		image = Image.open(clip_frame).convert("RGB")
-		image_ratio = image.size[1] / 2160
-		matches = find_heroes(clip_frame, cv2.TM_CCOEFF_NORMED)
-		temp = []
-		for match in matches:
-			temp.append(match.point[0] / image_ratio)
-		positions.append(temp)
-	for i in range(10):
-		total = 0
-		for clip_pos in positions:
-			total += clip_pos[i]
-		total = total / len(positions)
-		print(total)
-
-
 def test_clip(clip_info, method):
-	logprint(f"testing:{clip_info['slug']}")
+	slug = clip_info["slug"]
+	logprint(f"testing:{slug}")
 	heroes = []
 	for hero in session.query(Hero):
 		if hero.name in clip_info["heroes"]:
 			heroes.append(hero.localized_name)
 
-	clip_frame = get_first_clip_frame(clip_info["slug"])
+	clip_frame = get_first_clip_frame(slug)
 
 	matches = find_heroes(clip_frame, method, 5, True)
 	missing = heroes.copy()
@@ -96,8 +86,17 @@ def test_clip(clip_info, method):
 	else:
 		logprint("found all!")
 
+	expected_match = clip_info.get("match_id")
+	if not expected_match is None:
+		match_info = find_match(slug)
+		if match_info["match_id"] == expected_match:
+			print("found match!")
+		else:
+			print(f"couldn't find match. expected {expected_match}, actual {match_info['match_id']}")
+
 	logprint("\n")
 
+# outdated
 def check_reddit_clips():
 	reddit = praw.Reddit(client_id=config["reddit"]["client_id"],
 		client_secret=config["reddit"]["client_secret"],
@@ -118,13 +117,8 @@ def check_reddit_clips():
 		else:
 			print("new: not found")
 
-# for clip in testdata:
-# 	test_clip(clip, cv2.TM_CCOEFF_NORMED)
-# with open("temp/testlog.txt", "w+") as f:
-# 	f.write(testlog)
+# test all clips saved in testdata
+for clip in testdata:
+ 	test_clip(clip, cv2.TM_CCOEFF_NORMED)
 
-check_reddit_clips()
-# check_names()
-
-
-# create_positions()
+# check_reddit_clips()

@@ -1,6 +1,5 @@
 [
 	{
-		"clip": "https://www.twitch.tv/peterpandam/clip/AmericanNurturingDiscEleGiggle",
 		"slug": "AmericanNurturingDiscEleGiggle",
 		"heroes": [
 			"nevermore",
@@ -17,7 +16,6 @@
 		"notes": "sf dead"
 	},
 	{
-		"clip": "https://clips.twitch.tv/BillowingHedonisticSamosaPeteZarollTie",
 		"slug": "BillowingHedonisticSamosaPeteZarollTie",
 		"heroes": [
 			"naga_siren",
@@ -33,7 +31,6 @@
 		]
 	},
 	{
-		"clip": "https://clips.twitch.tv/LachrymoseHilariousWhaleFloof",
 		"slug": "LachrymoseHilariousWhaleFloof",
 		"heroes": [
 			"bounty_hunter",
@@ -50,7 +47,6 @@
 		"notes": "zeus arcana"
 	},
 	{
-		"clip": "https://clips.twitch.tv/CuteSucculentScorpionAMPEnergy",
 		"slug": "CuteSucculentScorpionAMPEnergy",
 		"heroes": [
 			"techies",
@@ -67,7 +63,6 @@
 		"notes": "techies arcana"
 	},
 	{
-		"clip": "https://clips.twitch.tv/ArbitraryBumblingNeanderthalKappaRoss",
 		"slug": "ArbitraryBumblingNeanderthalKappaRoss",
 		"heroes": [
 			"pangolier",
@@ -83,7 +78,6 @@
 		]
 	},
 	{
-		"clip": "https://clips.twitch.tv/GrossSuperSharkMrDestructoid",
 		"slug": "GrossSuperSharkMrDestructoid",
 		"heroes": [
 			"riki",
@@ -100,7 +94,6 @@
 		"notes": "dp doom & lion dead"
 	},
 	{
-		"clip": "https://clips.twitch.tv/LongCleverAyeayeOSkomodo",
 		"slug": "LongCleverAyeayeOSkomodo",
 		"heroes": [
 			"abaddon",
@@ -117,7 +110,6 @@
 		"notes": "razor, disruptor dead"
 	},
 	{
-		"clip": "https://clips.twitch.tv/PunchyNiceBunnyHassanChop",
 		"slug": "PunchyNiceBunnyHassanChop",
 		"heroes": [
 			"bane",
@@ -133,7 +125,6 @@
 		]
 	},
 	{
-		"clip": "https://clips.twitch.tv/AbstruseSarcasticGerbilEleGiggle",
 		"slug": "AbstruseSarcasticGerbilEleGiggle",
 		"heroes": [
 			"crystal_maiden",
@@ -146,6 +137,22 @@
 			"jakiro",
 			"bloodseeker",
 			"necrolyte"
+		]
+	},
+	{
+		"slug": "CoyCleverOilLitFam",
+		"match_id": 4757318890,
+		"heroes": [
+			"grimstroke",
+			"templar_assassin",
+			"beastmaster",
+			"skeleton_king",
+			"shadow_shaman",
+			"ursa",
+			"alchemist",
+			"silencer",
+			"doom_bringer",
+			"earth_spirit"
 		]
 	}
 ]
