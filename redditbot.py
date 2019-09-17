@@ -4,6 +4,7 @@ import prawcore
 import time
 import os
 import re
+import requests
 import finder
 
 
@@ -95,7 +96,10 @@ def run_bot():
 			print("praw threw servererror, skipping")
 		except prawcore.exceptions.ResponseException:
 			print("praw threw responseexception, skipping")
-		time.sleep(60)
+		if "healthchecks_url" in config:
+			requests.post(config["healthchecks_url"])
+		# Check every 5 minutes
+		time.sleep(60 * 5)
 
 
 if __name__ == '__main__':
