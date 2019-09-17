@@ -27,22 +27,24 @@ This tool takes a twitch clip of someone playing dota and finds the match (match
 
 ## Usage
 
-This library was built with the idea of using it as a reddit bot, which is its main use, but it can also be used separately to find specific clips. The `find_match` function in `finder.py` can be called to find the match for a given clip slug (the 'slug' is the bit at the end of the twitch clip url that is a bunch of words together.) The finder.py file can also be started directly if you give the clip slug as the argument. Here is an example for https://clips.twitch.tv/CoyCleverOilLitFam:
+This library was built with the idea of using it as a reddit bot, which is its main use, but it can also be used separately to find specific clips. The `find_match` function in `finder.py` can be called to find the match for a given clip slug (the 'slug' is the bit at the end of the twitch clip url that is a bunch of words together.) The finder.py file can also be started directly if you give the clip slug as the argument. Here is an example for https://clips.twitch.tv/ExuberantBillowingHumanMau5:
 
 ```
-> python finder.py CoyCleverOilLitFam
-finding for CoyCleverOilLitFam
+> python finder.py ExuberantBillowingHumanMau5
+finding for ExuberantBillowingHumanMau5
 matched for the following heroes:
-          Grimstroke:    (16, 8) {0   1.56} [0.9345031380653381]
-    Templar Assassin:    (79, 8) {1   1.56} [0.9476589560508728]
-         Beastmaster:   (142, 8) {2   1.56} [0.9453526139259338]
-         Wraith King:   (205, 8) {3   1.56} [0.9641481637954712]
-       Shadow Shaman:   (268, 8) {4   1.56} [0.9190652370452881]
-                Ursa:   (539, 8) {5   0.77} [0.9223578572273254]
-           Alchemist:   (602, 8) {6   1.11} [0.911087691783905]
-            Silencer:   (665, 8) {7   1.11} [0.945387601852417]
-                Doom:   (728, 8) {8   0.44} [0.9171727299690247]
-        Earth Spirit:   (791, 8) {9   0.77} [0.9245378375053406]
-found match 4757318890, started 37 minutes before the clip was taken.
-https://www.opendota.com/matches/4757318890
+              Huskar:    (16, 8) {0   1.56} [0.9541687965393066]
+         Lifestealer:    (79, 8) {1   1.56} [0.9161773920059204]
+              Mirana:   (142, 8) {2   1.56} [0.9785874485969543]
+             Abaddon:   (205, 8) {3   1.56} [0.9478229880332947]
+                 Axe:   (268, 8) {4   1.56} [0.8044984340667725]
+          Omniknight:   (539, 8) {5   0.77} [0.9744465351104736]
+         Earthshaker:   (602, 8) {6   1.11} [0.929298460483551]
+       Faceless Void:   (665, 8) {7   1.11} [0.9520202279090881]
+           Pangolier:   (728, 8) {8   0.44} [0.9074560403823853]
+             Phoenix:   (791, 8) {9   0.77} [0.966294527053833]
+found match 4997200445
+started 12 minutes before the clip was taken.
+started 11 minutes before the clip was recorded.
+https://www.opendota.com/matches/4997200445
 ```
