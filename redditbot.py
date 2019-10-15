@@ -16,8 +16,8 @@ reddit = None
 
 reddit_me = "^[/u\/EuphonicPotato](/user/EuphonicPotato)"
 github_url = "https://github.com/mdiller/twitchclipmatchfinder"
-reddit_comment_footer = f"\n\n---\n*^I ^am ^a ^bot ^created ^by {reddit_me}*\n\n*^(Source/Description:)* [*^(GitHub)*]({github_url})"
-
+github_explanation_url = "https://github.com/mdiller/twitchclipmatchfinder#how-it-works"
+reddit_comment_footer = f"\n\n---\n*^I ^am ^a ^bot ^created ^by {reddit_me}*\n\n*^(How I figured this out:)* [*^(Explanation)*]({github_explanation_url})\n\n*^(Source:)* [*^(GitHub)*]({github_url})"
 
 def read_cache():
 	if os.path.exists(cache_file):
