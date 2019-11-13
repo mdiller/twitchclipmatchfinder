@@ -322,7 +322,9 @@ def find_match(slug):
 		timestamp = datetime.datetime.strptime(clip_info["vod_data"]["created_at"], '%Y-%m-%dT%H:%M:%SZ')
 		timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
 		timestamp += clip_info["vod"]["offset"]
-		result["better_minutes_diff"] = (timestamp - match["start_time"]) // 60
+		new_diff = (timestamp - match["start_time"]) // 60
+		if new_diff > 0:
+			result["better_minutes_diff"] = new_diff
 
 	return result
 
