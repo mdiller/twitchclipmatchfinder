@@ -45,6 +45,5 @@ matched for the following heroes:
              Phoenix:   (791, 8) {9   0.77} [0.966294527053833]
 found match 4997200445
 started 12 minutes before the clip was taken.
-started 11 minutes before the clip was recorded.
 https://www.opendota.com/matches/4997200445
 ```
