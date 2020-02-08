@@ -326,7 +326,7 @@ def find_match(slug):
 		if new_diff > 0:
 			result["better_minutes_diff"] = new_diff
 
-	# Get league clip
+	# Get league info
 	match_details_url = f"https://api.opendota.com/api/matches/{best_match['match_id']}"
 	try:
 		response = requests.get(match_details_url)
