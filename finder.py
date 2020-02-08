@@ -310,10 +310,10 @@ def find_match(slug):
 	if best_match is None:
 		raise MatchNotFoundException(heroes=heroes)
 
-	minutes_diff = (timestamp - match["start_time"]) // 60
+	minutes_diff = (timestamp - best_match["start_time"]) // 60
 
 	result = {
-		"match_id": match["match_id"],
+		"match_id": best_match["match_id"],
 		"minutes_diff": minutes_diff,
 		"heroes": heroes
 	}
@@ -322,9 +322,25 @@ def find_match(slug):
 		timestamp = datetime.datetime.strptime(clip_info["vod_data"]["created_at"], '%Y-%m-%dT%H:%M:%SZ')
 		timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
 		timestamp += clip_info["vod"]["offset"]
-		new_diff = (timestamp - match["start_time"]) // 60
+		new_diff = (timestamp - best_match["start_time"]) // 60
 		if new_diff > 0:
 			result["better_minutes_diff"] = new_diff
+
+	# Get league clip
+	match_details_url = f"https://api.opendota.com/api/matches/{best_match['match_id']}"
+	try:
+		response = requests.get(match_details_url)
+		if response.status_code != 200:
+			raise OpendotaApiException(message=f"Match id<{best_match['match_id']} not found.")
+		match_details = response.json()
+		if 'tier' in match_details['league']:
+			if match_details['league']['tier'] == 'premium':
+				result['league_name'] = match_details['league']['name']
+				result['team_rad'] = match_details['radiant_team']['name']
+				result['team_dire'] = match_details['dire_team']['name']
+
+	except json.decoder.JSONDecodeError as e:
+		raise OpendotaApiException from e
 
 	return result
 
@@ -340,5 +356,7 @@ if __name__ == '__main__':
 		print(f"started {match['minutes_diff']} minutes before the clip was taken.")
 		if match.get("better_minutes_diff"):
 			print(f"started {match['better_minutes_diff']} minutes before the clip was recorded.")
-
+		print(f"found match {match['match_id']}")		
+		if match.get('league_name'):
+			print(f"{match['team_rad']} vs {match['team_dire']} at {match['league_name']}")
 		print(f"https://www.opendota.com/matches/{match['match_id']}")

@@ -43,6 +43,8 @@ def save_cache(cache):
 
 def create_reddit_response(match_info):
 	response = f"Looks like this is match {match_info['match_id']}"
+	if match_info.get("team_rad") and match_info.get("team_dire") and match_info.get("league_name"):
+		response += f", {match_info['team_rad']} vs {match_info['team_dire']} at {match_info['league_name']}"	
 	if match_info.get("better_minutes_diff"):
 		response += f", which started {match_info['better_minutes_diff']} minutes before the clip was recorded."
 	else:
