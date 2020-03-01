@@ -6,7 +6,6 @@ import json
 from PIL import Image
 import sys
 import datetime
-import cv2
 from dotabase import *
 
 
@@ -327,18 +326,29 @@ def find_match(slug):
 			result["better_minutes_diff"] = new_diff
 
 	# Get league info
-	match_details_url = f"https://api.opendota.com/api/matches/{best_match['match_id']}"
+	match_file = cache_filename(result["match_id"], "json")
+	match_details = None
 	try:
-		response = requests.get(match_details_url)
-		if response.status_code != 200:
-			match_details = response.json()
+		if os.path.exists(match_file):
+			with open(match_file, "r") as f:
+				match_details = json.loads(f.read())
+		else:
+			match_details_url = f"https://api.opendota.com/api/matches/{best_match['match_id']}"
+			response = requests.get(match_details_url)
+			if response.status_code == 200:
+				match_details = response.json()
+
+			with open(match_file, "w+") as f:
+				f.write(json.dumps(match_details, indent="\t"))
+
+		if match_details is not None:
 			if 'tier' in match_details['league']:
 				if match_details['league']['tier'] == 'premium':
 					result['league_name'] = match_details['league']['name']
 					result['team_rad'] = match_details['radiant_team']['name']
 					result['team_dire'] = match_details['dire_team']['name']
 
-	except json.decoder.JSONDecodeError as e:
+	except (json.decoder.JSONDecodeError, KeyError) as e:
 		pass
 
 	return result
