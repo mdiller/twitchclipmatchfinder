@@ -54,5 +54,9 @@
 	"84": [
 		"/panorama/images/heroes/npc_dota_hero_ogre_magi_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_ogre_magi_alt2_png.png"
+	],
+	"42": [
+		"/panorama/images/heroes/npc_dota_hero_skeleton_king_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_skeleton_king_alt2_png.png"
 	]
 }
