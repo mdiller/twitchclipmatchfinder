@@ -23,7 +23,7 @@ This tool takes a twitch clip of someone playing dota and finds the match (match
 - [Twitch API](https://dev.twitch.tv/docs/v5/reference/clips/#get-clip)
 - [Opendota API](https://docs.opendota.com/#tag/findMatches)
 - [Python PIL / Pillow](https://pillow.readthedocs.io/en/stable/)
-- [OpenCV](https://opencv.org/)
+- [OpenCV](https://opencv.org/) (this one requires you do `apt install python3-opencv`)
 
 ## Usage
 
