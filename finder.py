@@ -209,7 +209,7 @@ def find_heroes(match_image_path, method=cv2.TM_CCOEFF_NORMED, extra_count=0, so
 				match.score = score
 				match.point = top_left
 
-	matches = list(filter(lambda m: m.is_point_valid(4, 10), matches))
+	matches = list(filter(lambda m: m.is_point_valid(4, 15), matches))
 	matches = sorted(matches, key=lambda m: m.score, reverse=True)
 
 	final_matches = []
