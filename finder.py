@@ -9,6 +9,11 @@ import datetime
 from dotabase import *
 
 
+debug = False
+
+finder_y_tolerance = 4
+finder_x_tolernce = 15
+
 session = dotabase_session()
 
 vpk_url = "http://dotabase.dillerm.io/dota-vpk"
@@ -28,6 +33,10 @@ if not os.path.exists(cache_dir):
 with open("config.json", "r") as f:
 	config = json.loads(f.read())
 
+def print_debug(text):
+	global debug
+	if debug:
+		print(text)
 
 # CLIP PROCESSING
 
@@ -209,7 +218,7 @@ def find_heroes(match_image_path, method=cv2.TM_CCOEFF_NORMED, extra_count=0, so
 				match.score = score
 				match.point = top_left
 
-	matches = list(filter(lambda m: m.is_point_valid(4, 15), matches))
+	matches = list(filter(lambda m: m.is_point_valid(finder_y_tolerance, finder_x_tolerance), matches))
 	matches = sorted(matches, key=lambda m: m.score, reverse=True)
 
 	final_matches = []
@@ -267,13 +276,18 @@ def find_match(slug):
 
 	heroes = find_heroes(clip_frame)
 
+	print_debug(f"found {len(heroes)} heroes:")
+	for hero in heroes:
+		print_debug(hero)
 	if len(heroes) != 10:
+		print_debug("not enough heroes found")
 		raise HeroFindingException(heroes=heroes)
 	unsure_count = 0
 	for hero_match in heroes:
 		if hero_match.score < 0.75:
 			unsure_count += 1
 	if unsure_count > 5:
+		print_debug("not high enough confidence for some heroes")
 		raise HeroFindingException(heroes=heroes)
 
 	teama = []
@@ -286,6 +300,7 @@ def find_match(slug):
 	teama = "&".join(map(lambda p: f"teamA={p}", teama))
 	teamb = "&".join(map(lambda p: f"teamB={p}", teamb))
 	url = f"https://api.opendota.com/api/findMatches?{teama}&{teamb}"
+	print_debug(url)
 
 	timestamp = datetime.datetime.strptime(clip_info["created_at"], '%Y-%m-%dT%H:%M:%SZ')
 	timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
@@ -354,7 +369,9 @@ def find_match(slug):
 	return result
 
 
-if __name__ == '__main__':
+def run_main():
+	global debug
+	debug = True
 	if len(sys.argv) > 1:
 		slug = sys.argv[1]
 		match = find_match(slug)
@@ -369,3 +386,9 @@ if __name__ == '__main__':
 		if match.get('league_name'):
 			print(f"{match['team_rad']} vs {match['team_dire']} at {match['league_name']}")
 		print(f"https://www.opendota.com/matches/{match['match_id']}")
+
+
+if __name__ == '__main__':
+	run_main()
+
+
