@@ -12,7 +12,7 @@ from dotabase import *
 debug = False
 
 finder_y_tolerance = 4
-finder_x_tolernce = 15
+finder_x_tolerance = 15
 
 session = dotabase_session()
 
@@ -276,9 +276,6 @@ def find_match(slug):
 
 	heroes = find_heroes(clip_frame)
 
-	print_debug(f"found {len(heroes)} heroes:")
-	for hero in heroes:
-		print_debug(hero)
 	if len(heroes) != 10:
 		print_debug("not enough heroes found")
 		raise HeroFindingException(heroes=heroes)
@@ -374,7 +371,14 @@ def run_main():
 	debug = True
 	if len(sys.argv) > 1:
 		slug = sys.argv[1]
-		match = find_match(slug)
+		try:
+			match = find_match(slug)
+		except HeroFindingException as e:
+			print("HeroFindingException encountered!!!")
+			print(f"found {len(e.heroes)} heroes:")
+			for hero in e.heroes:
+				print(hero)
+			exit(1)
 		print("matched for the following heroes:")
 		for hero_match in match["heroes"]:
 			print(hero_match)
