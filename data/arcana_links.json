@@ -66,5 +66,9 @@
 	],
 	"1": [
 		"/panorama/images/heroes/npc_dota_hero_antimage_persona1_png.png"
+	],
+	"21": [
+		"/panorama/images/heroes/npc_dota_hero_windrunner_alt1_png.png",		
+		"/panorama/images/heroes/npc_dota_hero_windrunner_alt2_png.png"
 	]
 }
