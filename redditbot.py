@@ -55,6 +55,8 @@ def create_reddit_response(match_info):
 	response += f"\n- [OpenDota](https://www.opendota.com/matches/{match_id})"
 	response += f"\n- [Dotabuff](https://www.dotabuff.com/matches/{match_id})"
 	response += f"\n- [Stratz](https://www.stratz.com/matches/{match_id})"
+	if match_info.get("league_name"):
+		response += f"\n- [datdota](https://www.datdota.com/matches/{match_id})"
 	response += reddit_comment_footer
 	return response
 
