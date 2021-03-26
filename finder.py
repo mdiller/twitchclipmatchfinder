@@ -7,12 +7,16 @@ from PIL import Image
 import sys
 import datetime
 from dotabase import *
-
+import pathlib
+import re
+import youtube_dl
 
 debug = False
 
 finder_y_tolerance = 4
 finder_x_tolerance = 15
+
+twitch_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 
 session = dotabase_session()
 
@@ -88,6 +92,7 @@ def get_first_clip_frame(slug):
 		vidcap = cv2.VideoCapture(mp4_filename)
 		success, image = vidcap.read()
 		cv2.imwrite(frame_filename, image)
+		vidcap.release()
 	return frame_filename
 
 
@@ -274,7 +279,81 @@ def find_match(slug):
 	except Exception as e:
 		raise ClipLoadingException() from e
 
-	heroes = find_heroes(clip_frame)
+	return find_match_with_info(clip_info, clip_frame)
+
+youtube_url_patterns = [
+	r"https?://(?:www\.)?youtube\.com/watch\?v=([^/&]*)(?:&t=(\d+))?",
+	r"https?://(?:www\.)?youtu\.be/([^/?]*)(?:\?t=(\d+))?",
+]
+
+def find_match_from_youtube(url):
+	youtube_id = None
+	seconds_offset = None
+	for pattern in youtube_url_patterns:
+		match = re.match(pattern, url)
+		if match:
+			youtube_id = match.group(1)
+			if match.group(2):
+				seconds_offset = int(match.group(2))
+			break
+	if youtube_id is None:
+		raise ClipFinderException(message="Doesn't look like a youtube url")
+	
+	video_file = cache_filename(f"youtube_{youtube_id}", "mp4")
+
+	ytdl_options = {
+		'format': 'bestvideo[ext=mp4]',
+		'outtmpl': video_file,
+		'noplaylist' : True,
+		'nooverwrites': True,
+		"timestamp": True
+	}
+	with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
+		print("contacting youtube...")
+		video_info = None
+		should_download_mp4 = not os.path.exists(video_file)
+		video_info = ytdl.extract_info(youtube_id, download=should_download_mp4)
+
+	# get date created
+	date_created = datetime.datetime.strptime(video_info["upload_date"], "%Y%m%d")
+	date_created += datetime.timedelta(days=1) # add a day because we dont have time info so assume worst
+	date_created = date_created.strftime(twitch_datetime_format)
+
+	# calculate seconds in if dont already have
+	if seconds_offset is None:
+		seconds_offset = video_info["duration"] // 2
+
+	video_frame_file = cache_filename(f"youtube_{youtube_id}_{seconds_offset}", "png")
+
+	if not os.path.exists(video_frame_file):
+		print("extracting frame...")
+		vidcap = cv2.VideoCapture(video_file)
+		frame_rate = vidcap.get(5) #frame rate
+		desired_frame = seconds_offset * frame_rate
+
+		vidcap.set(1, desired_frame)
+		success, frame = vidcap.read()
+		if not success:
+			raise ClipFinderException(message="Error when extracting frame")
+		cv2.imwrite(video_frame_file, frame)
+		vidcap.release()
+
+	return find_match_with_info({
+		"created_at": date_created
+	}, video_frame_file)
+
+def find_match_from_file(image_path):
+	print(f"finding from {image_path}")
+
+	date_created = datetime.datetime.fromtimestamp(pathlib.Path(image_path).stat().st_ctime)
+	date_created = date_created.strftime(twitch_datetime_format)
+
+	return find_match_with_info({
+		"created_at": date_created
+	}, image_path)
+
+def find_match_with_info(clip_info, clip_image):
+	heroes = find_heroes(clip_image)
 
 	if len(heroes) != 10:
 		print_debug("not enough heroes found")
@@ -299,7 +378,7 @@ def find_match(slug):
 	url = f"https://api.opendota.com/api/findMatches?{teama}&{teamb}"
 	print_debug(url)
 
-	timestamp = datetime.datetime.strptime(clip_info["created_at"], '%Y-%m-%dT%H:%M:%SZ')
+	timestamp = datetime.datetime.strptime(clip_info["created_at"], twitch_datetime_format)
 	timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
 
 	if timestamp < 1555200000:
@@ -330,7 +409,7 @@ def find_match(slug):
 	}
 
 	if clip_info.get("vod_data"):
-		timestamp = datetime.datetime.strptime(clip_info["vod_data"]["created_at"], '%Y-%m-%dT%H:%M:%SZ')
+		timestamp = datetime.datetime.strptime(clip_info["vod_data"]["created_at"], twitch_datetime_format)
 		timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
 		timestamp += clip_info["vod"]["offset"]
 		new_diff = (timestamp - best_match["start_time"]) // 60
@@ -372,7 +451,14 @@ def run_main():
 	if len(sys.argv) > 1:
 		slug = sys.argv[1]
 		try:
-			match = find_match(slug)
+			if re.match(r"https?://(?:www\.)?youtu", slug):
+				# this is a youtube url
+				match = find_match_from_youtube(slug)
+			elif os.path.isfile(slug):
+				# this is a passed in file to an image we can parse
+				match = find_match_from_file(slug)
+			else:
+				match = find_match(slug)
 		except HeroFindingException as e:
 			print("HeroFindingException encountered!!!")
 			print(f"found {len(e.heroes)} heroes:")

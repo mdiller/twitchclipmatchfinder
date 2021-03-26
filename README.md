@@ -29,6 +29,8 @@ This tool takes a twitch clip of someone playing dota and finds the match (match
 
 This library was built with the idea of using it as a reddit bot, which is its main use, but it can also be used separately to find specific clips. The `find_match` function in `finder.py` can be called to find the match for a given clip slug (the 'slug' is the bit at the end of the twitch clip url that is a bunch of words together.) The finder.py file can also be started directly if you give the clip slug as the argument. Here is an example for https://clips.twitch.tv/ExuberantBillowingHumanMau5:
 
+I've also now added support for passing in youtube urls
+
 ```
 > python finder.py ExuberantBillowingHumanMau5
 finding for ExuberantBillowingHumanMau5

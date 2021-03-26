@@ -3,3 +3,4 @@ numpy>=1.15.1
 opencv-python>=3.4.1.15
 Pillow>=4.0.0
 requests>=2.21.0
+youtube-dl>=2018.8.28
