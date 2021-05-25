@@ -465,6 +465,12 @@ def run_main():
 			for hero in e.heroes:
 				print(hero)
 			exit(1)
+		except MatchNotFoundException as e:
+			print("MatchNotFoundException encountered!!!")
+			print(f"found {len(e.heroes)} heroes:")
+			for hero in e.heroes:
+				print(hero)
+			exit(1)
 		print("matched for the following heroes:")
 		for hero_match in match["heroes"]:
 			print(hero_match)
