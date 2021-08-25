@@ -434,7 +434,7 @@ def find_match_with_info(clip_info, clip_image):
 
 		if match_details is not None:
 			if 'tier' in match_details['league']:
-				if match_details['league']['tier'] == 'premium':
+				if match_details['league']['tier'] in ['premium', 'professional']:
 					result['league_name'] = match_details['league']['name']
 					result['team_rad'] = match_details['radiant_team']['name']
 					result['team_dire'] = match_details['dire_team']['name']
