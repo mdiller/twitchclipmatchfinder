@@ -1,19 +1,18 @@
 {
-	"5": [
-		"/panorama/images/heroes/npc_dota_hero_crystal_maiden_alt1_png.png"
-	],
-	"8": [
-		"/panorama/images/heroes/npc_dota_hero_juggernaut_alt1_png.png",
-		"/panorama/images/heroes/npc_dota_hero_juggernaut_alt2_png.png"
+	"25": [
+		"/panorama/images/heroes/npc_dota_hero_lina_alt1_png.png"
 	],
 	"104": [
 		"/panorama/images/heroes/npc_dota_hero_legion_commander_alt1_png.png"
 	],
-	"25": [
-		"/panorama/images/heroes/npc_dota_hero_lina_alt1_png.png"
+	"109": [
+		"/panorama/images/heroes/npc_dota_hero_terrorblade_alt1_png.png"
 	],
-	"114": [
-		"/panorama/images/heroes/npc_dota_hero_monkey_king_alt1_png.png"
+	"105": [
+		"/panorama/images/heroes/npc_dota_hero_techies_alt1_png.png"
+	],
+	"22": [
+		"/panorama/images/heroes/npc_dota_hero_zuus_alt1_png.png"
 	],
 	"11": [
 		"/panorama/images/heroes/npc_dota_hero_nevermore_alt1_png.png"
@@ -21,54 +20,68 @@
 	"44": [
 		"/panorama/images/heroes/npc_dota_hero_phantom_assassin_alt1_png.png"
 	],
+	"5": [
+		"/panorama/images/heroes/npc_dota_hero_crystal_maiden_alt1_png.png"
+	],
 	"14": [
 		"/panorama/images/heroes/npc_dota_hero_pudge_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_pudge_alt2_png.png",
-		"/panorama/images/heroes/npc_dota_hero_pudge_alt_png.png",
 		"/panorama/images/heroes/npc_dota_hero_pudge_persona1_png.png"
 	],
-	"86": [
-		"/panorama/images/heroes/npc_dota_hero_rubick_alt_png.png"
+	"114": [
+		"/panorama/images/heroes/npc_dota_hero_monkey_king_alt1_png.png"
 	],
-	"105": [
-		"/panorama/images/heroes/npc_dota_hero_techies_alt1_png.png"
-	],
-	"109": [
-		"/panorama/images/heroes/npc_dota_hero_terrorblade_alt1_png.png"
+	"8": [
+		"/panorama/images/heroes/npc_dota_hero_juggernaut_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_juggernaut_alt2_png.png"
 	],
 	"91": [
 		"/panorama/images/heroes/npc_dota_hero_wisp_alt_png.png"
 	],
-	"22": [
-		"/panorama/images/heroes/npc_dota_hero_zuus_alt1_png.png"
+	"67": [
+		"/panorama/images/heroes/npc_dota_hero_spectre_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_spectre_alt2_png.png"
 	],
-	"2": [
-		"/panorama/images/heroes/npc_dota_hero_axe_alt_png.png"
+	"86": [
+		"/panorama/images/heroes/npc_dota_hero_rubick_alt_png.png"
 	],
 	"7": [
 		"/panorama/images/heroes/npc_dota_hero_earthshaker_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_earthshaker_alt2_png.png"
 	],
+	"39": [
+		"/panorama/images/heroes/npc_dota_hero_queenofpain_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_queenofpain_alt2_png.png"
+	],
+	"2": [
+		"/panorama/images/heroes/npc_dota_hero_axe_alt_png.png"
+	],
 	"74": [
 		"/panorama/images/heroes/npc_dota_hero_invoker_persona1_png.png"
-	],
-	"84": [
-		"/panorama/images/heroes/npc_dota_hero_ogre_magi_alt1_png.png",
-		"/panorama/images/heroes/npc_dota_hero_ogre_magi_alt2_png.png"
 	],
 	"42": [
 		"/panorama/images/heroes/npc_dota_hero_skeleton_king_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_skeleton_king_alt2_png.png"
 	],
-	"39": [
-		"/panorama/images/heroes/npc_dota_hero_queenofpain_alt1_png.png",
-		"/panorama/images/heroes/npc_dota_hero_queenofpain_alt2_png.png"
+	"84": [
+		"/panorama/images/heroes/npc_dota_hero_ogre_magi_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_ogre_magi_alt2_png.png"
 	],
 	"1": [
 		"/panorama/images/heroes/npc_dota_hero_antimage_persona1_png.png"
 	],
 	"21": [
-		"/panorama/images/heroes/npc_dota_hero_windrunner_alt1_png.png",		
+		"/panorama/images/heroes/npc_dota_hero_windrunner_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_windrunner_alt2_png.png"
+	],
+	"49": [
+		"/panorama/images/heroes/npc_dota_hero_dragon_knight_persona1_png.png"
+	],
+	"9": [
+		"/panorama/images/heroes/npc_dota_hero_mirana_persona1_png.png"
+	],
+	"6": [
+		"/panorama/images/heroes/npc_dota_hero_drow_ranger_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_drow_ranger_alt2_png.png"
 	]
 }
