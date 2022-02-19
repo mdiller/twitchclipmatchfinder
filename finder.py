@@ -36,11 +36,33 @@ if not os.path.exists(cache_dir):
 
 with open("config.json", "r") as f:
 	config = json.loads(f.read())
+twitch_token_data = None
 
 def print_debug(text):
 	global debug
 	if debug:
 		print(text)
+
+# gets the twitch token for use with the api
+# based on https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#oauth-client-credentials-flow
+def get_twitch_token():
+	global twitch_token_data
+
+	token_is_expired = twitch_token_data is None or twitch_token_data["expiration_date"] > datetime.datetime.now()
+
+	if token_is_expired:
+		response = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={config['twitch']['client_id']}&client_secret={config['twitch']['client_secret']}&grant_type=client_credentials")
+
+		if response.status_code != 200:
+			print(f"error {response.status_code} when getting twitch token")
+			print(response.text)
+			exit(1)
+		
+		twitch_token_data = response.json()
+		expiration_date = datetime.datetime.now() + datetime.timedelta(seconds=twitch_token_data["expires_in"] - 30)
+		twitch_token_data["expiration_date"] = expiration_date
+	
+	return twitch_token_data["access_token"]
 
 # CLIP PROCESSING
 
@@ -53,25 +75,30 @@ def retrieve_clip_info(slug):
 		with open(filename, "r") as f:
 			return json.loads(f.read())
 	else:
-		data = requests.get(f"https://api.twitch.tv/kraken/clips/{slug}",
+		data = requests.get(f"https://api.twitch.tv/helix/clips?id={slug}",
 			headers= {
 			"Client-ID": config["twitch"]["client_id"],
-			"Accept": "application/vnd.twitchtv.v5+json"
+			"Authorization": "Bearer " + get_twitch_token()
 		}).json()
 
-		thumb_url = data["thumbnails"]["medium"]
+		with open("temp1.json", "w+") as f:
+			f.write(json.dumps(data, indent="\t"))
+
+		data = data["data"][0]
+
+		thumb_url = data["thumbnail_url"]
 		slice_point = thumb_url.index("-preview-")
 		mp4_url = thumb_url[:slice_point] + '.mp4'
 		data["mp4_url"] = mp4_url
 
-		if data["vod"]:
-			vod_id = data["vod"]["id"]
-			vod_data = requests.get(f"https://api.twitch.tv/kraken/videos/{vod_id}",
+		if data.get("video_id"):
+			vod_id = data["video_id"]
+			vod_data = requests.get(f"https://api.twitch.tv/helix/videos?id={vod_id}",
 				headers= {
 				"Client-ID": config["twitch"]["client_id"],
-				"Accept": "application/vnd.twitchtv.v5+json"
+				"Authorization": "Bearer " + get_twitch_token()
 			}).json()
-			data["vod_data"] = vod_data
+			data["vod_data"] = vod_data["data"][0]
 
 		with open(filename, "w+") as f:
 			f.write(json.dumps(data, indent="\t"))
@@ -408,13 +435,14 @@ def find_match_with_info(clip_info, clip_image):
 		"heroes": heroes
 	}
 
-	if clip_info.get("vod_data"):
-		timestamp = datetime.datetime.strptime(clip_info["vod_data"]["created_at"], twitch_datetime_format)
-		timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
-		timestamp += clip_info["vod"]["offset"]
-		new_diff = (timestamp - best_match["start_time"]) // 60
-		if new_diff > 0:
-			result["better_minutes_diff"] = new_diff
+	# NOTE: unfortunatley the 'offset' field was removed in the new 'helix' api that we're being forced to use, so we can't get the below information unless they add that feature back
+	# if clip_info.get("vod_data"):
+	# 	timestamp = datetime.datetime.strptime(clip_info["vod_data"]["created_at"], twitch_datetime_format)
+	# 	timestamp = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
+	# 	timestamp += clip_info["vod"]["offset"]
+	# 	new_diff = (timestamp - best_match["start_time"]) // 60
+	# 	if new_diff > 0:
+	# 		result["better_minutes_diff"] = new_diff
 
 	# Get league info
 	match_file = cache_filename(result["match_id"], "json")

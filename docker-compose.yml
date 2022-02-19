@@ -1,0 +1,8 @@
+services:
+  redditbot:
+    container_name: twitchclipmatchfinder
+    build: .
+    volumes:
+      - ./config.json:/code/config.json
+      - ./containers.json:/code/containers.json
+      - ./cache:/code/cache
