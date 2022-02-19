@@ -87,6 +87,7 @@ def bot_check_posts():
 
 def run_bot():
 	global reddit
+	print("starting bot...")
 	reddit = praw.Reddit(client_id=config["reddit"]["client_id"],
 		client_secret=config["reddit"]["client_secret"],
 		user_agent=config["reddit"]["user_agent"],
