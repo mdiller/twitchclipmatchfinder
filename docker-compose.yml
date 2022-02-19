@@ -1,5 +1,6 @@
 services:
   redditbot:
+    restart: unless-stopped
     container_name: twitchclipmatchfinder
     build: .
     volumes:
