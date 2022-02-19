@@ -8,7 +8,7 @@ COPY . /code
 WORKDIR /code
 
 # install dependencies
-RUN pip install -r requirements.txt
+RUN pip --disable-pip-version-check install -r requirements.txt 2>&1 | grep -v "pip as the 'root' user"
 
 # command to run on container start
 CMD [ "python", "./redditbot.py" ] 
