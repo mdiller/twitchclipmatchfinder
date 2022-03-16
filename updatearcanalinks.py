@@ -5,7 +5,7 @@ from dotabase import *
 
 
 # This is a script for auto-generating the arcana_links.json file
-# note that to run this script you'll have to have a local version of the vpk and a parsed version of the items_game file. mine is produced as a sideproduct of dotabase_builder
+# note that to run this script you'll have to have a local version of the vpk and a parsed version of the items_game file. mine is produced as a sideproduct of running dotabase-builder
 
 
 

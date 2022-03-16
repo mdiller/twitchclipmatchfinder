@@ -313,6 +313,7 @@ youtube_url_patterns = [
 	r"https?://(?:www\.)?youtu\.be/([^/?]*)(?:\?t=(\d+))?",
 ]
 
+
 def find_match_from_youtube(url):
 	youtube_id = None
 	seconds_offset = None
@@ -325,21 +326,17 @@ def find_match_from_youtube(url):
 			break
 	if youtube_id is None:
 		raise ClipFinderException(message="Doesn't look like a youtube url")
-	
-	video_file = cache_filename(f"youtube_{youtube_id}", "mp4")
 
 	ytdl_options = {
-		'format': 'bestvideo[ext=mp4]',
-		'outtmpl': video_file,
-		'noplaylist' : True,
-		'nooverwrites': True,
+		"format": "bestvideo[ext=mp4]",
+		"geturl": True,
 		"timestamp": True
 	}
 	with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
-		print("contacting youtube...")
-		video_info = None
-		should_download_mp4 = not os.path.exists(video_file)
-		video_info = ytdl.extract_info(youtube_id, download=should_download_mp4)
+		print("contacting youtube for mp4 url...")
+		video_info = ytdl.extract_info(youtube_id, download=False)
+	
+	video_url = video_info["url"]
 
 	# get date created
 	date_created = datetime.datetime.strptime(video_info["upload_date"], "%Y%m%d")
@@ -348,13 +345,13 @@ def find_match_from_youtube(url):
 
 	# calculate seconds in if dont already have
 	if seconds_offset is None:
-		seconds_offset = video_info["duration"] // 2
+		seconds_offset = video_info["duration"] // 5
 
 	video_frame_file = cache_filename(f"youtube_{youtube_id}_{seconds_offset}", "png")
 
 	if not os.path.exists(video_frame_file):
 		print("extracting frame...")
-		vidcap = cv2.VideoCapture(video_file)
+		vidcap = cv2.VideoCapture(video_url)
 		frame_rate = vidcap.get(5) #frame rate
 		desired_frame = seconds_offset * frame_rate
 
@@ -505,8 +502,7 @@ def run_main():
 		print(f"found match {match['match_id']}")
 		print(f"started {match['minutes_diff']} minutes before the clip was taken.")
 		if match.get("better_minutes_diff"):
-			print(f"started {match['better_minutes_diff']} minutes before the clip was recorded.")
-		print(f"found match {match['match_id']}")		
+			print(f"started {match['better_minutes_diff']} minutes before the clip was recorded.")	
 		if match.get('league_name'):
 			print(f"{match['team_rad']} vs {match['team_dire']} at {match['league_name']}")
 		print(f"https://www.opendota.com/matches/{match['match_id']}")
@@ -514,5 +510,3 @@ def run_main():
 
 if __name__ == '__main__':
 	run_main()
-
-

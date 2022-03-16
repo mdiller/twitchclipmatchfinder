@@ -4,7 +4,7 @@ This tool takes a twitch clip of someone playing dota and finds the match (match
 
 ## How it works
 
-- Get some info about the clip [via the twitch api](https://dev.twitch.tv/docs/v5/reference/clips/#get-clip)
+- Get some info about the clip [via the twitch api](https://dev.twitch.tv/docs/api/reference)
 - Download the mp4 of the clip
 - Extract the first frame of the mp4 (using [OpenCV](https://opencv.org/))
 - Find the heroes in the top bar of the image
@@ -20,7 +20,7 @@ This tool takes a twitch clip of someone playing dota and finds the match (match
 
 ## Libraries used
 
-- [Twitch API](https://dev.twitch.tv/docs/v5/reference/clips/#get-clip)
+- [Twitch API](https://dev.twitch.tv/docs/api/reference)
 - [Opendota API](https://docs.opendota.com/#tag/findMatches)
 - [Python PIL / Pillow](https://pillow.readthedocs.io/en/stable/)
 - [OpenCV](https://opencv.org/) (this one requires you do `apt install python3-opencv`)
@@ -28,8 +28,6 @@ This tool takes a twitch clip of someone playing dota and finds the match (match
 ## Usage
 
 This library was built with the idea of using it as a reddit bot, which is its main use, but it can also be used separately to find specific clips. The `find_match` function in `finder.py` can be called to find the match for a given clip slug (the 'slug' is the bit at the end of the twitch clip url that is a bunch of words together.) The finder.py file can also be started directly if you give the clip slug as the argument. Here is an example for https://clips.twitch.tv/ExuberantBillowingHumanMau5:
-
-I've also now added support for passing in youtube urls
 
 ```
 > python finder.py ExuberantBillowingHumanMau5
@@ -48,4 +46,39 @@ matched for the following heroes:
 found match 4997200445
 started 12 minutes before the clip was taken.
 https://www.opendota.com/matches/4997200445
+```
+
+I've also now added support for passing in youtube urls
+```
+> python finder.py https://www.youtube.com/watch?v=hruZPhoE4jc
+contacting youtube for mp4 url...
+[youtube] hruZPhoE4jc: Downloading webpage
+extracting frame...
+https://api.opendota.com/api/findMatches?teamA=80&teamA=2&teamA=121&teamA=105&teamA=14&teamB=106&teamB=126&teamB=86&teamB=99&teamB=107
+matched for the following heroes:
+          Lone Druid:    (21, 8) {0  11.56} [0.9186623096466064]
+                 Axe:    (83, 8) {1   9.56} [0.8153694868087769]
+          Grimstroke:   (145, 8) {2   7.56} [0.8971994519233704]
+             Techies:   (207, 8) {3   5.56} [0.8951715230941772]
+               Pudge:   (269, 8) {4   3.56} [0.9334858059883118]
+        Ember Spirit:   (539, 8) {5   0.77} [0.9471630454063416]
+         Void Spirit:   (601, 8) {6   3.11} [0.853003740310669]
+              Rubick:   (663, 8) {7   5.11} [0.930595874786377]
+         Bristleback:   (725, 8) {8   6.44} [0.8776403069496155]
+        Earth Spirit:   (787, 8) {9   8.77} [0.9303072690963745]
+found match 6452347930
+started 971 minutes before the clip was taken.
+https://www.opendota.com/matches/6452347930
+```
+
+### config.json
+
+To run finder.py from this repo, you'll need to create a `config.json` file, and place it in the same directory as finder.py. You'll need to [register an "application"](https://dev.twitch.tv/docs/authentication#registration) with the twitch api (doesnt cost money or take too long). With the client id and the client secret that they give you, you should be able to run the script. The file should look roughly like the following:
+```json
+{
+	"twitch": {
+		"client_id": "<client_id_here>",
+		"client_secret": "<client_secret_here>"
+	}
+}
 ```
