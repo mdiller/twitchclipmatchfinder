@@ -15,4 +15,4 @@ RUN apt-get install ffmpeg libsm6 libxext6  -y
 RUN pip --disable-pip-version-check install -r requirements.txt 2>&1 | grep --line-buffered -v "pip as the 'root' user"
 
 # command to run on container start
-CMD [ "python", "./redditbot.py" ] 
+CMD [ "python", "-u", "./redditbot.py" ] 
