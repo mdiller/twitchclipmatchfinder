@@ -4,4 +4,4 @@ opencv-python>=3.4.1.15
 Pillow>=4.0.0
 requests>=2.21.0
 youtube-dl>=2018.8.28
-praw==6.0.0
+praw>=7.6.0

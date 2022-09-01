@@ -1,8 +1,10 @@
+import typing
 import cv2
 import numpy as np
 import requests
 import os
 import json
+import shutil
 from PIL import Image
 import sys
 import datetime
@@ -12,6 +14,10 @@ import re
 import youtube_dl
 
 debug = False
+SUPERDEBUG = False
+
+superdebug_dir = "superdebug"
+
 
 finder_y_tolerance = 4
 finder_x_tolerance = 15
@@ -37,6 +43,11 @@ if not os.path.exists(cache_dir):
 with open("config.json", "r") as f:
 	config = json.loads(f.read())
 twitch_token_data = None
+
+def superdebug_file(filename):
+	if not os.path.exists(superdebug_dir):
+		os.mkdir(superdebug_dir)
+	return os.path.join(superdebug_dir, filename)
 
 def print_debug(text):
 	global debug
@@ -80,9 +91,6 @@ def retrieve_clip_info(slug):
 			"Client-ID": config["twitch"]["client_id"],
 			"Authorization": "Bearer " + get_twitch_token()
 		}).json()
-
-		with open("temp1.json", "w+") as f:
-			f.write(json.dumps(data, indent="\t"))
 
 		data = data["data"][0]
 
@@ -132,7 +140,7 @@ def save_content(filename, data):
 	with open(filename, "wb+") as f:
 		f.write(data)
 
-def get_template(vpk_png_path, width):
+def get_template(vpk_png_path, width) -> cv2.Mat:
 	local_file = vpk_cache + vpk_png_path
 	if not os.path.exists(local_file):
 		remote_url = vpk_url + vpk_png_path
@@ -142,7 +150,7 @@ def get_template(vpk_png_path, width):
 	# this gets the right ratio for a hero image
 	height = round(0.5625 * width)
 	image = Image.open(local_file).convert("RGB")
-	image.thumbnail((width, height), Image.ANTIALIAS)
+	image.thumbnail((width, height), Image.Resampling.LANCZOS)
 
 	modifier = width / 128
 	# crop to not include the edges or the bottom section where dota plus icons show up
@@ -158,7 +166,13 @@ def get_template(vpk_png_path, width):
 hero_positions = [ 30.44, 156.44, 282.44, 408.44, 534.44, 1078.77, 1205.11, 1331.11, 1456.44, 1582.77 ]
 
 class HeroMatch():
-	def __init__(self, hero, size_ratio):
+	hero: Hero
+	size_ratio: float
+	hero_width: int
+	images: typing.List[cv2.Mat]
+	point: typing.Tuple[int, int]
+	score: float
+	def __init__(self, hero: Hero, size_ratio):
 		self.hero = hero
 		self.size_ratio = size_ratio
 		self.hero_width = round(128 * size_ratio)
@@ -214,7 +228,7 @@ class HeroMatch():
 matching_methods = ["cv2.TM_CCOEFF", "cv2.TM_CCOEFF_NORMED", "cv2.TM_CCORR",
 	"cv2.TM_CCORR_NORMED", "cv2.TM_SQDIFF", "cv2.TM_SQDIFF_NORMED"]
 
-def find_heroes(match_image_path, method=cv2.TM_CCOEFF_NORMED, extra_count=0, sort_by_score=False):
+def find_heroes(match_image_path, method=cv2.TM_CCOEFF_NORMED, extra_count=0, sort_by_score=False) -> typing.List[HeroMatch]:
 	game_image = Image.open(match_image_path).convert("RGB")
 	# ratio between full hero size and the one in this image
 	image_ratio = game_image.size[1] / 2160
@@ -223,10 +237,27 @@ def find_heroes(match_image_path, method=cv2.TM_CCOEFF_NORMED, extra_count=0, so
 	herobar_width = 0.8 * game_image.size[1]
 	herobar_margin = (game_image.size[0] - herobar_width) // 2
 
-	game_image = game_image.crop((herobar_margin, 0, game_image.size[0] - herobar_margin, int(84 * image_ratio)))
+	# added this logic because sometimes theres a black border at the top of the image
+	top_margin = -1
+	margin_samples = 20
+	brightness_threshold = 30
+	done_finding_margin = False
+	while not done_finding_margin:
+		top_margin += 1
+		for i in range(margin_samples):
+			pixel = game_image.getpixel((int(i * (game_image.width / margin_samples)), top_margin))
+			brightness = pixel[0] + pixel[1] + pixel[2]
+			if brightness > brightness_threshold:
+				done_finding_margin = True
+				break
+
+	game_image = game_image.crop((herobar_margin, top_margin, game_image.size[0] - herobar_margin, top_margin + int(84 * image_ratio)))
 	img = cv2.cvtColor(np.asarray(game_image), cv2.COLOR_RGB2GRAY)
 	img2 = img.copy()
 
+	if SUPERDEBUG:
+		game_image.save(superdebug_file("herobar.png"))
+	
 	matches = HeroMatch.get_all(image_ratio)
 	for match in matches:
 		for template in match.images:
@@ -298,11 +329,14 @@ class MatchTooEarlyException(ClipFinderException):
 class OpendotaApiException(ClipFinderException):
 	pass
 
-def find_match(slug):
-	print(f"finding for {slug}")
+def find_match(slug, print_finding=True):
+	if print_finding:
+		print(f"finding for {slug}")
 	try:
 		clip_info = retrieve_clip_info(slug)
 		clip_frame = get_first_clip_frame(slug)
+		if SUPERDEBUG:
+			shutil.copyfile(clip_frame, superdebug_file("first_frame.png"))
 	except Exception as e:
 		raise ClipLoadingException() from e
 
@@ -472,9 +506,13 @@ def find_match_with_info(clip_info, clip_image):
 
 def run_main():
 	global debug
+	global SUPERDEBUG
 	debug = True
 	if len(sys.argv) > 1:
 		slug = sys.argv[1]
+		if len(sys.argv) > 2:
+			if sys.argv[2] == "-superdebug":
+				SUPERDEBUG = True
 		try:
 			if re.match(r"https?://(?:www\.)?youtu", slug):
 				# this is a youtube url

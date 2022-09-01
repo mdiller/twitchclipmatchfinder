@@ -1,0 +1,44 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Finder",
+			"type": "python",
+			"request": "launch",
+			"program": "finder.py",
+			"console": "integratedTerminal",
+			"args": [ "AmericanNurturingDiscEleGiggle" ]
+		},
+		{
+			"name": "Run Tests",
+			"type": "python",
+			"request": "launch",
+			"program": "tests/test.py",
+			"console": "integratedTerminal"
+		},
+		{
+			"name": "Reddit Bot",
+			"type": "python",
+			"request": "launch",
+			"program": "redditbot.py",
+			"console": "integratedTerminal"
+		},
+		{
+			"name": "Update Arcana Links",
+			"type": "python",
+			"request": "launch",
+			"program": "updatearcanalinks.py",
+			"console": "integratedTerminal"
+		},
+		{
+			"name": "Run Current File",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal"
+		}
+	]
+}

@@ -2,6 +2,25 @@
 
 This tool takes a twitch clip of someone playing dota and finds the match (match id) of dota that they were playing so you can get a dotabuff/opendota link or retrieve stats for it. I've created a reddit bot that automatically finds clips posted and gets matches for them: [/u/DotaClipMatchFinder](https://www.reddit.com/user/DotaClipMatchFinder) (The name is slightly different because TwitchClipMatchFinder was too many characters)
 
+## Example
+
+### Input
+- Reddit Post: https://redd.it/wx4rug
+- Twitch Clip: http://clips.twitch.tv/TriangularFastAirGuitarVoteNay-mdiGdPRgYchBsZ3w (Note: link may have expired)
+- Heres an example image taken from the above video clip:
+![example_frame](tests/images/TriangularFastAirGuitarVoteNay-mdiGdPRgYchBsZ3w.png)
+
+### Output
+The bot generates output that looks like this:
+> Looks like this is match 6723135798, Team Secret vs Talon at ESL One Malaysia 2022 powered by Intel, which started 39 minutes before the clip was taken.
+> 
+> More match details here:
+> - [OpenDota](https://www.opendota.com/matches/6723135798)
+> - [Dotabuff](https://www.dotabuff.com/matches/6723135798)
+> - [Stratz](https://www.stratz.com/matches/6723135798)
+> - [datdota](https://www.datdota.com/matches/6723135798)
+
+
 ## How it works
 
 - Get some info about the clip [via the twitch api](https://dev.twitch.tv/docs/api/reference)
@@ -9,6 +28,7 @@ This tool takes a twitch clip of someone playing dota and finds the match (match
 - Extract the first frame of the mp4 (using [OpenCV](https://opencv.org/))
 - Find the heroes in the top bar of the image
     - First, crop the image to only look at the top row where the heroes should be
+    - Make sure when cropping to account for the black bar that is at the top of the image of some clips
     - Load all the hero images (plus arcana images)
     - Check if the hero is in the given image and if so, where (using [OpenCV](https://opencv.org/))
     - Filter out heroes that are in the wrong place in the image

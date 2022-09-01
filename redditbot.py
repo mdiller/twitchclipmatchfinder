@@ -6,12 +6,20 @@ import os
 import re
 import requests
 import finder
+from praw.models import Comment, Submission as Post
 
 
 with open("config.json", "r") as f:
 	config = json.loads(f.read())
 
-cache_file = "reddit_cache.json"
+DEBUG = config.get("debug", False)
+
+if DEBUG:
+	print("DEBUG: True")
+
+checked_posts = set()
+
+reddit: praw.Reddit
 reddit = None
 
 reddit_me = "^[/u\/EuphonicPotato](/user/EuphonicPotato)"
@@ -19,14 +27,22 @@ github_url = "https://github.com/mdiller/twitchclipmatchfinder"
 github_explanation_url = "https://github.com/mdiller/twitchclipmatchfinder#how-it-works"
 reddit_comment_footer = f"\n\n---\n*^I ^am ^a ^bot ^created ^by {reddit_me}*\n\n*^(How I figured this out:)* [*^(Explanation)*]({github_explanation_url})\n\n*^(Source:)* [*^(GitHub)*]({github_url})"
 
-def read_cache():
-	if os.path.exists(cache_file):
-		with open(cache_file, "r") as f:
-			return json.loads(f.read())
-	else:
-		return {
-			"replied_posts": []
-		}
+# prints that only go off during debug mode
+def print_debug(text):
+	if DEBUG:
+		print(text)
+
+# prints the status of this post to console out
+def print_post_status(post: Post, slug: str, status: str):
+	reddit_url = f"https://redd.it/{post.id}"
+	twitch_url = f"https://clips.twitch.tv/{slug}"
+	if DEBUG and not ("Match: " in status):
+		title = post.title
+		max_title_len = 75
+		if len(title) > max_title_len:
+			title = title[:max_title_len - 3] + "..."
+		twitch_url = f"{twitch_url.ljust(78)} | {title}"
+	print(f"{reddit_url.rjust(24)} | {status.ljust(30)} | {twitch_url}")
 
 # clears the data cache of all files older than cache_age_limit days
 def clean_data_cache(data_cache_dir, cache_age_limit):
@@ -36,10 +52,6 @@ def clean_data_cache(data_cache_dir, cache_age_limit):
 		if os.path.isfile(filename) and os.stat(filename).st_mtime < now - (cache_age_limit * 86400):
 			os.remove(filename)
 
-# saves the reddit cache
-def save_cache(cache):
-	with open(cache_file, "w+") as f:
-		f.write(json.dumps(cache, indent="\t"))
 
 def create_reddit_response(match_info):
 	response = f"Looks like this is match {match_info['match_id']}"
@@ -61,29 +73,48 @@ def create_reddit_response(match_info):
 	return response
 
 def bot_check_posts():
-	cache = read_cache()
-	for post in reddit.subreddit("dota2").new(limit=100):
-		if post.id in cache["replied_posts"]:
-			continue # already replied to this post
+	print_debug("entering: bot_check_posts")
+	# time_filter = "week" if DEBUG else "day"
+	time_filter = "week"
+	post: Post
+	# this emulates https://old.reddit.com/search?q=site%3Atwitch.tv+subreddit%3Adota2&sort=new&t=all
+	for post in reddit.subreddit("dota2").search("site:twitch.tv", sort="new", time_filter=time_filter):
+		if post.id in checked_posts:
+			continue
+		checked_posts.add(post.id)
 		match = re.match(r"^https?://clips\.twitch\.tv/([^\?]*)(\?.*)?$", post.url)
 		if match:
 			slug = match.group(1)
 			match_info = None
 			try: 
-				match_info = finder.find_match(slug)
+				match_info = finder.find_match(slug, False)
 			except finder.ClipFinderException as e:
-				print(f"encountered {type(e).__name__} for slug {slug} on post {post.id}")
+				if isinstance(e, finder.HeroFindingException):
+					status = "Not A Match"
+				else:
+					status = f"ERROR: {type(e).__name__}"
+				print_post_status(post, slug, status)
 				pass
 			if match_info is not None:
-				print(f"found match {match_info['match_id']} on post {post.id}, via slug {slug}")
 				response = create_reddit_response(match_info)
-				try:
-					post.reply(response)
-				except praw.exceptions.APIException as e:
-					print("getting ratelimited, quitting")
-					return
-				cache["replied_posts"].append(post.id)
-				save_cache(cache)
+				status = f"Match: {match_info['match_id']}"
+
+				already_commented = False
+				comment: Comment
+				for comment in post.comments:
+					if comment.author.name == config["reddit"]["username"]:
+						already_commented = True
+				if already_commented:
+					status += " (commented)"
+				print_post_status(post, slug, status)
+
+				if not (DEBUG or already_commented):
+					try:
+						post.reply(body=response)
+					except praw.exceptions.APIException as e:
+						print("getting ratelimited, quitting")
+						checked_posts.remove(post.id)
+						return
 
 def run_bot():
 	global reddit
@@ -104,6 +135,7 @@ def run_bot():
 		if "healthchecks_url" in config:
 			requests.post(config["healthchecks_url"])
 		# Check every 5 minutes
+		print_debug("sleeping for 5 mins")
 		time.sleep(60 * 5)
 
 
