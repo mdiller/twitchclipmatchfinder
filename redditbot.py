@@ -53,14 +53,33 @@ def clean_data_cache(data_cache_dir, cache_age_limit):
 			os.remove(filename)
 
 
+_TIME_LIMITS = [("day", 24 * 60), ("hour", 60), ("minute", 1)]
+
+def format_delta_minutes(delta_minutes: int) -> str:
+	"""Formats `delta_minutes` into a human-readable string."""
+	# Nasty edge case. This ends up spelling "which started right before ..."
+	if delta_minutes == 0:
+		return "right"
+	formatted = []
+	for name, limit in _TIME_LIMITS:
+		if delta_minutes >= limit:
+			qot, delta_minutes = divmod(delta_minutes, limit)
+			actual_name = f"{name}s" if qot > 1 else name
+			formatted.append(f"{qot} {actual_name}")
+	return ", ".join(formatted)
+
 def create_reddit_response(match_info):
 	response = f"Looks like this is match {match_info['match_id']}"
 	if match_info.get("team_rad") and match_info.get("team_dire") and match_info.get("league_name"):
 		response += f", {match_info['team_rad']} vs {match_info['team_dire']} at {match_info['league_name']}"	
-	if match_info.get("better_minutes_diff"):
-		response += f", which started {match_info['better_minutes_diff']} minutes before the clip was recorded."
+
+	if "better_minutes_diff" in match_info:
+		minutes_diff = match_info["better_minutes_diff"]
+		event = "recorded"
 	else:
-		response += f", which started {match_info['minutes_diff']} minutes before the clip was taken."
+		minutes_diff = match_info["minutes_diff"]
+		event = "taken"
+	response += f", which started {format_timedelta(minutes_diff)} before the clip was {event}."
 
 	response += "\n\nMore match details here:\n"
 	match_id = match_info['match_id']
