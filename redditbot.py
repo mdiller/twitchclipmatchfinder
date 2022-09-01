@@ -93,8 +93,7 @@ def create_reddit_response(match_info):
 
 def bot_check_posts():
 	print_debug("entering: bot_check_posts")
-	# time_filter = "week" if DEBUG else "day"
-	time_filter = "week"
+	time_filter = "week" if DEBUG else "day"
 	post: Post
 	# this emulates https://old.reddit.com/search?q=site%3Atwitch.tv+subreddit%3Adota2&sort=new&t=all
 	for post in reddit.subreddit("dota2").search("site:twitch.tv", sort="new", time_filter=time_filter):
