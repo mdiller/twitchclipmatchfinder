@@ -6,6 +6,7 @@ import os
 import re
 import requests
 import finder
+import time
 from praw.models import Comment, Submission as Post
 
 
@@ -17,7 +18,10 @@ DEBUG = config.get("debug", False)
 if DEBUG:
 	print("DEBUG: True")
 
-checked_posts = set()
+MatchNotFound_hours_timeout = 6 # the number of hours to wait till giving up on finding the match (when getting MatchNotFoundException)
+
+posts_to_revisit = set() # a set of posts for which we found the heroes, but got a MatchNotFoundException, and aren't too old (see MatchNotFound_hours_timeout)
+checked_posts = set() # a set of post ids that we've already checked.
 
 reddit: praw.Reddit
 reddit = None
@@ -79,7 +83,7 @@ def create_reddit_response(match_info):
 	else:
 		minutes_diff = match_info["minutes_diff"]
 		event = "taken"
-	response += f", which started {format_timedelta(minutes_diff)} before the clip was {event}."
+	response += f", which started {format_delta_minutes(minutes_diff)} before the clip was {event}."
 
 	response += "\n\nMore match details here:\n"
 	match_id = match_info['match_id']
@@ -93,6 +97,7 @@ def create_reddit_response(match_info):
 
 def bot_check_posts():
 	print_debug("entering: bot_check_posts")
+	MatchNotFound_time_cutoff = time.time() - (60 * 60 * MatchNotFound_hours_timeout)
 	time_filter = "week" if DEBUG else "day"
 	post: Post
 	# this emulates https://old.reddit.com/search?q=site%3Atwitch.tv+subreddit%3Adota2&sort=new&t=all
@@ -107,12 +112,20 @@ def bot_check_posts():
 			try: 
 				match_info = finder.find_match(slug, False)
 			except finder.ClipFinderException as e:
+				should_print_status = True
 				if isinstance(e, finder.HeroFindingException):
 					status = "Not A Match"
+				elif isinstance(e, finder.MatchNotFoundException) and (post.created_utc > MatchNotFound_time_cutoff):
+					status = "Heroes found. No match yet..."
+					if post.id in posts_to_revisit:
+						should_print_status = False
+					else:
+						posts_to_revisit.add(post.id)
+					checked_posts.remove(post.id) # revisit this later
 				else:
 					status = f"ERROR: {type(e).__name__}"
-				print_post_status(post, slug, status)
-				pass
+				if should_print_status:
+					print_post_status(post, slug, status)
 			if match_info is not None:
 				response = create_reddit_response(match_info)
 				status = f"Match: {match_info['match_id']}"
@@ -152,9 +165,10 @@ def run_bot():
 			print("praw threw responseexception, skipping")
 		if "healthchecks_url" in config:
 			requests.post(config["healthchecks_url"])
-		# Check every 5 minutes
-		print_debug("sleeping for 5 mins")
-		time.sleep(60 * 5)
+		# Check every x minutes
+		minutes_to_sleep = 10
+		print_debug(f"sleeping for {minutes_to_sleep} mins")
+		time.sleep(60 * minutes_to_sleep)
 
 
 if __name__ == '__main__':

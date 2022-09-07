@@ -13,8 +13,10 @@ import pathlib
 import re
 import youtube_dl
 
+
 debug = False
 SUPERDEBUG = False
+PRINT_HTTP_REQUESTS = False
 
 superdebug_dir = "superdebug"
 
@@ -62,6 +64,8 @@ def get_twitch_token():
 	token_is_expired = twitch_token_data is None or twitch_token_data["expiration_date"] > datetime.datetime.now()
 
 	if token_is_expired:
+		if PRINT_HTTP_REQUESTS:
+			print(f"http_request: auth_token refresh")
 		response = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={config['twitch']['client_id']}&client_secret={config['twitch']['client_secret']}&grant_type=client_credentials")
 
 		if response.status_code != 200:
@@ -86,7 +90,10 @@ def retrieve_clip_info(slug):
 		with open(filename, "r") as f:
 			return json.loads(f.read())
 	else:
-		data = requests.get(f"https://api.twitch.tv/helix/clips?id={slug}",
+		url = f"https://api.twitch.tv/helix/clips?id={slug}"
+		if PRINT_HTTP_REQUESTS:
+			print(f"http_request: {url}")
+		data = requests.get(url,
 			headers= {
 			"Client-ID": config["twitch"]["client_id"],
 			"Authorization": "Bearer " + get_twitch_token()
@@ -101,7 +108,10 @@ def retrieve_clip_info(slug):
 
 		if data.get("video_id"):
 			vod_id = data["video_id"]
-			vod_data = requests.get(f"https://api.twitch.tv/helix/videos?id={vod_id}",
+			url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
+			if PRINT_HTTP_REQUESTS:
+				print(f"http_request: {url}")
+			vod_data = requests.get(url,
 				headers= {
 				"Client-ID": config["twitch"]["client_id"],
 				"Authorization": "Bearer " + get_twitch_token()
@@ -120,6 +130,8 @@ def get_first_clip_frame(slug):
 		if not os.path.exists(mp4_filename):
 			data = retrieve_clip_info(slug)
 			mp4_url = data["mp4_url"]
+			if PRINT_HTTP_REQUESTS:
+				print(f"http_request: {mp4_url}")
 			r = requests.get(mp4_url)
 			with open(mp4_filename, "wb+") as f:
 				f.write(r.content)
@@ -144,6 +156,8 @@ def get_template(vpk_png_path, width) -> cv2.Mat:
 	local_file = vpk_cache + vpk_png_path
 	if not os.path.exists(local_file):
 		remote_url = vpk_url + vpk_png_path
+		if PRINT_HTTP_REQUESTS:
+			print(f"http_request: {remote_url}")
 		r = requests.get(remote_url)
 		save_content(local_file, r.content)
 
@@ -443,6 +457,8 @@ def find_match_with_info(clip_info, clip_image):
 		raise MatchTooEarlyException(heroes=heroes)
 
 	try:
+		if PRINT_HTTP_REQUESTS:
+			print(f"http_request: {url}")
 		response = requests.get(url)
 		if response.status_code != 200:
 			raise OpendotaApiException(heroes=heroes)
