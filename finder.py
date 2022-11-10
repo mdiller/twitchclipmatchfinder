@@ -22,7 +22,7 @@ superdebug_dir = "superdebug"
 
 
 finder_y_tolerance = 4
-finder_x_tolerance = 15
+finder_x_tolerance = 18
 
 twitch_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 
