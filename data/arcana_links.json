@@ -91,5 +91,9 @@
 	"6": [
 		"/panorama/images/heroes/npc_dota_hero_drow_ranger_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_drow_ranger_alt2_png.png"
+	],
+	"15": [
+		"/panorama/images/heroes/npc_dota_hero_razor_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_razor_alt2_png.png"
 	]
 }
