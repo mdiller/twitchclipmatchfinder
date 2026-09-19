@@ -58,12 +58,15 @@
 		"/panorama/images/heroes/npc_dota_hero_queenofpain_alt2_png.png"
 	],
 	"2": [
-		"/panorama/images/heroes/npc_dota_hero_axe_alt_png.png"
+		"/panorama/images/heroes/npc_dota_hero_axe_alt_png.png",
+		"/panorama/images/heroes/npc_dota_hero_axe_carnival_png.png"
 	],
 	"74": [
 		"/panorama/images/heroes/npc_dota_hero_invoker_persona1_png.png"
 	],
 	"42": [
+		"/panorama/images/heroes/npc_dota_hero_skeleton_king_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_skeleton_king_alt2_png.png",
 		"/panorama/images/heroes/npc_dota_hero_skeleton_king_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_skeleton_king_alt2_png.png"
 	],
@@ -88,12 +91,30 @@
 	"9": [
 		"/panorama/images/heroes/npc_dota_hero_mirana_persona1_png.png"
 	],
+	"101": [
+		"/panorama/images/heroes/npc_dota_hero_skywrath_mage_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_skywrath_mage_alt2_png.png"
+	],
 	"6": [
 		"/panorama/images/heroes/npc_dota_hero_drow_ranger_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_drow_ranger_alt2_png.png"
 	],
+	"20": [
+		"/panorama/images/heroes/npc_dota_hero_vengefulspirit_alt1_png.png",
+		"/panorama/images/heroes/npc_dota_hero_vengefulspirit_alt2_png.png",
+		"/panorama/images/heroes/npc_dota_hero_vengefulspirit_alt3_png.png"
+	],
 	"15": [
 		"/panorama/images/heroes/npc_dota_hero_razor_alt1_png.png",
 		"/panorama/images/heroes/npc_dota_hero_razor_alt2_png.png"
+	],
+	"111": [
+		"/panorama/images/heroes/npc_dota_hero_oracle_carnival_png.png"
+	],
+	"10": [
+		"/panorama/images/heroes/npc_dota_hero_morphling_carnival_png.png"
+	],
+	"99": [
+		"/panorama/images/heroes/npc_dota_hero_bristleback_carnival_png.png"
 	]
 }

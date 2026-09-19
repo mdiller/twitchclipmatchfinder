@@ -11,6 +11,7 @@ import datetime
 from dotabase import *
 import pathlib
 import re
+import urllib.parse
 import youtube_dl
 
 
@@ -23,6 +24,12 @@ superdebug_dir = "superdebug"
 
 finder_y_tolerance = 4
 finder_x_tolerance = 18
+
+# only ever fetch reddit-hosted video from this exact host - never follow a url pulled
+# from user-supplied comment text, only the structured media info reddit's api gives us
+reddit_video_hostname = "v.redd.it"
+reddit_video_max_bytes = 250 * 1024 * 1024 # hard cap so a hostile/huge file can't fill the disk
+reddit_video_request_timeout = 30 # seconds
 
 twitch_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -423,6 +430,91 @@ def find_match_from_file(image_path):
 	return find_match_with_info({
 		"created_at": date_created
 	}, image_path)
+
+def find_match_from_reddit_video(post_id, video_url, created_utc):
+	"""
+	Finds a match from a reddit-hosted (v.redd.it) video.
+	post_id: the reddit submission's id (used only to namespace cache files - validated below)
+	video_url: the fallback_url from the submission's own media/secure_media.reddit_video info
+	           (never a url parsed out of comment text - only reddit's own structured data)
+	created_utc: the submission's created_utc timestamp
+	"""
+	if not re.match(r"^[A-Za-z0-9_]{1,32}$", post_id):
+		raise ClipFinderException(message="unexpected reddit post id")
+
+	parsed_url = urllib.parse.urlparse(video_url)
+	if parsed_url.scheme != "https" or parsed_url.hostname != reddit_video_hostname:
+		raise ClipFinderException(message="not a v.redd.it video url")
+
+	mp4_filename = cache_filename(f"redditvideo_{post_id}", "mp4")
+
+	if not os.path.exists(mp4_filename):
+		tmp_filename = mp4_filename + ".part"
+		try:
+			if PRINT_HTTP_REQUESTS:
+				print(f"http_request: {video_url}")
+			with requests.get(video_url, stream=True, timeout=reddit_video_request_timeout) as r:
+				r.raise_for_status()
+
+				# guard against a redirect taking us somewhere other than reddit's video host
+				if urllib.parse.urlparse(r.url).hostname != reddit_video_hostname:
+					raise ClipLoadingException(message="video url redirected away from v.redd.it")
+
+				content_length = r.headers.get("Content-Length")
+				if content_length and int(content_length) > reddit_video_max_bytes:
+					raise ClipLoadingException(message="reddit video too large")
+
+				downloaded_bytes = 0
+				with open(tmp_filename, "wb+") as f:
+					for chunk in r.iter_content(chunk_size=262144):
+						downloaded_bytes += len(chunk)
+						if downloaded_bytes > reddit_video_max_bytes:
+							raise ClipLoadingException(message="reddit video too large")
+						f.write(chunk)
+			os.replace(tmp_filename, mp4_filename)
+		except ClipFinderException:
+			if os.path.exists(tmp_filename):
+				os.remove(tmp_filename)
+			raise
+		except Exception as e:
+			if os.path.exists(tmp_filename):
+				os.remove(tmp_filename)
+			raise ClipLoadingException() from e
+
+	date_created = datetime.datetime.utcfromtimestamp(created_utc).strftime(twitch_datetime_format)
+
+	vidcap = cv2.VideoCapture(mp4_filename)
+	fps = vidcap.get(cv2.CAP_PROP_FPS) or 30
+	frame_count = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+	vidcap.release()
+	duration_seconds = (frame_count / fps) if fps else 0
+
+	# try the first frame, then a couple points further in, in case the hero bar isn't
+	# visible right at the start (unlike twitch clips, reddit videos aren't pre-trimmed)
+	offsets_seconds = [0]
+	if duration_seconds > 2:
+		offsets_seconds += [duration_seconds * 0.25, duration_seconds * 0.5]
+
+	last_exception = HeroFindingException()
+	for i, offset_seconds in enumerate(offsets_seconds):
+		frame_filename = cache_filename(f"redditvideo_{post_id}_{i}", "png")
+		if not os.path.exists(frame_filename):
+			vidcap = cv2.VideoCapture(mp4_filename)
+			if offset_seconds:
+				vidcap.set(cv2.CAP_PROP_POS_MSEC, offset_seconds * 1000)
+			success, frame = vidcap.read()
+			vidcap.release()
+			if not success:
+				continue
+			cv2.imwrite(frame_filename, frame)
+
+		try:
+			return find_match_with_info({"created_at": date_created}, frame_filename)
+		except HeroFindingException as e:
+			last_exception = e
+			continue
+
+	raise last_exception
 
 def find_match_with_info(clip_info, clip_image):
 	heroes = find_heroes(clip_image)

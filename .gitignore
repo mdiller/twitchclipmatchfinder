@@ -1,6 +1,7 @@
 
 vpk/
 temp/
+_temp/
 notes.md
 cache/
 config.json
